@@ -1,0 +1,307 @@
+openapi: 3.0.0
+info:
+  title: Song Rating API
+  description: API for the song ratings app.
+  version: 1.0.0
+
+servers:
+  - url: "http://localhost:8080/api"
+  - url: "http://localhost:3000"
+
+paths:
+  "/game/player/{code}":
+    get:
+      summary: Get game information for a player.
+      description: Retrieve information about a game with a player code.
+      operationId: getGameInfoForPlayer
+      parameters:
+        - name: code
+          description: A player code for the player/game to get info about.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved game information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  playerCode:
+                    description: The code that was given to access this info.
+                    type: string
+                  playerName:
+                    description: The name of the player the code belongs to.
+                    type: string
+                  status:
+                    description: The state of the game.
+                    type: string
+                    enum:
+                      - waitingForPlaylists
+                      - active
+                      - finished
+                  playerCount:
+                    description: The number of players in the game.
+                    type: integer
+                  songsPerPlaylist:
+                    description: The number of songs per playlist for the game.
+                    type: integer
+                  playlists:
+                    description: A list of all playlists or null if the status is 'waitingForPlaylists'.
+                    type: array
+                    nullable: true
+                    items:
+                      description: A playlist to be rated by this player.
+                      type: object
+                      properties:
+                        playerName:
+                          description: The name of the player this playlist belongs to.
+                          type: string
+                        playlistLink:
+                          description: A spotify link to this playlist.
+                          type: string
+                        songs:
+                          description: All songs in the playlist with their ratings.
+                          type: array
+                          items:
+                            description: A song and its rating.
+                            type: object
+                            properties:
+                              songId:
+                                description: The ID of this song.
+                                type: string
+                              songName:
+                                description: The name of the song.
+                                type: string
+                              artist:
+                                description: The name of the artist of the song.
+                                type: string
+                              songLink:
+                                description: A link to the song.
+                                type: string
+                              rating:
+                                description: The rating given to this song.
+                                type: number
+                                format: float
+                                nullable: true
+        "400":
+          description: Invalid code supplied.
+        "500":
+          description: Internal server error.
+
+    post:
+      summary: Submit rating data for songs for a player.
+      description: Submit a rating for all songs in all playlists for a player given their code.
+      operationId: rateSongsForPlayer
+      parameters:
+        - name: code
+          description: A player code for the player/game to submit ratings for.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                playerCode:
+                  description: The player code to submit ratings under.
+                  type: string
+                songs:
+                  description: All songs in the playlist with their ratings.
+                  type: array
+                  items:
+                    description: A song and its rating.
+                    type: object
+                    properties:
+                      songId:
+                        description: The ID of this song.
+                        type: string
+                      rating:
+                        description: The rating given to this song.
+                        type: number
+                        format: float
+                        nullable: true
+      responses:
+        "201":
+          description: Songs rated successfully.
+        "400":
+          description: Invalid input.
+        "500":
+          description: Internal server error.
+
+  /game/{code}:
+    get:
+      summary: Get all information about a game.
+      description: Retrieve information about a game with a master code.
+      operationId: getMasterGameInfo
+      parameters:
+        - name: code
+          description: A master code for the game to get info about.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved game information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  masterCode:
+                    description: The code that was given to access this info.
+                    type: string
+                  status:
+                    description: The state of the game.
+                    type: string
+                    enum:
+                      - waitingForPlaylists
+                      - active
+                      - finished
+                  playerCount:
+                    description: The number of players in the game.
+                    type: integer
+                  songsPerPlaylist:
+                    description: The number of songs per playlist for the game.
+                    type: integer
+                  players:
+                    description: The players in this game.
+                    type: array
+                    items:
+                      description: A player in this game.
+                      type: object
+                      properties:
+                        playerCode:
+                          description: The code for this player.
+                          type: string
+                        playerName:
+                          description: The name of this player.
+                          type: string
+                  playlists:
+                    description: A list of all playlists.
+                    type: array
+                    items:
+                      description: A playlist to be rated by this player or possibly null if the status is 'waitingForPlaylists' and this playlist hasn't been submitted yet.
+                      type: object
+                      nullable: true
+                      properties:
+                        playerName:
+                          description: The name of the player this playlist belongs to.
+                          type: string
+                        playlistLink:
+                          description: A spotify link to this playlist.
+                          type: string
+                        songs:
+                          description: All songs in the playlist with their ratings.
+                          type: array
+                          items:
+                            description: A song and its rating.
+                            type: object
+                            properties:
+                              songId:
+                                description: The ID of this song.
+                                type: string
+                              songName:
+                                description: The name of the song.
+                                type: string
+                              artist:
+                                description: The name of the artist of the song.
+                                type: string
+                              songLink:
+                                description: A link to the song.
+                                type: string
+                              ratings:
+                                description: The ratings given to this song from all players.
+                                type: array
+                                items:
+                                  description: A rating given to this song and the player that gave it.
+                                  type: object
+                                  properties:
+                                    rating:
+                                      description: The rating given.
+                                      type: number
+                                      format: float
+                                      nullable: true
+                                    playerName:
+                                      description: The name of the player who gave the rating.
+                                      type: string
+        "400":
+          description: Invalid code supplied.
+        "500":
+          description: Internal server error.
+
+  /game/end/{code}:
+    post:
+      summary: End a game.
+      description: End a game, closing out all ratings (all ratings must be in).
+      operationId: endGame
+      parameters:
+        - name: code
+          description: A master code for the game to end.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Game ended successfully.
+        "409":
+          description: Game end failed because not all ratings were in.
+        "400":
+          description: Invalid input.
+        "500":
+          description: Internal server error.
+
+  /game/new:
+    post:
+      summary: Create a new game.
+      description: Create a new game by supplying game rules and player names.
+      operationId: createGame
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                playerNames:
+                  description: The names of all players for this game (all must be unique).
+                  type: array
+                  items:
+                    description: A player name.
+                    type: string
+                songsPerPlaylist:
+                  description: The number of songs per playlist for the game.
+                  type: integer
+      responses:
+        "201":
+          description: Game created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    description: The players in this game.
+                    type: array
+                    items:
+                      description: A player in this game.
+                      type: object
+                      properties:
+                        playerCode:
+                          description: The code for this player.
+                          type: string
+                        playerName:
+                          description: The name of this player.
+                          type: string
+        "400":
+          description: Invalid input.
+        "500":
+          description: Internal server error.
