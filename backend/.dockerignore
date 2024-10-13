@@ -1,6 +1,9 @@
 # Documentation
 openapi.yml
 
+# Data Files
+data.json
+
 # Docker
 Dockerfile
 .dockerignore

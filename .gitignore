@@ -2,6 +2,9 @@
 [Tt][Oo][Dd][Oo].*
 [Tt][Oo][Dd][Oo]
 
+# Data Files
+data.json
+
 # Logs
 logs
 *.log
