@@ -49,12 +49,12 @@ paths:
                     description: The number of songs per playlist for the game.
                     type: integer
                   playlists:
-                    description: A list of all playlists or null if the status is 'waitingForPlaylists'.
+                    description: A list of all playlists.
                     type: array
-                    nullable: true
                     items:
-                      description: A playlist to be rated by this player.
+                      description: A playlist to be rated by this player or possibly null if the status is 'waitingForPlaylists' and this playlist hasn't been submitted yet
                       type: object
+                      nullable: true
                       properties:
                         playerName:
                           description: The name of the player this playlist belongs to.
@@ -87,6 +87,8 @@ paths:
                                 format: float
                                 nullable: true
         "400":
+          description: Invalid input.
+        "404":
           description: Invalid code supplied.
         "500":
           description: Internal server error.
@@ -132,6 +134,8 @@ paths:
           description: Songs rated successfully.
         "400":
           description: Invalid input.
+        "404":
+          description: Invalid code supplied.
         "500":
           description: Internal server error.
 
@@ -188,7 +192,7 @@ paths:
                     description: A list of all playlists.
                     type: array
                     items:
-                      description: A playlist to be rated by this player or possibly null if the status is 'waitingForPlaylists' and this playlist hasn't been submitted yet.
+                      description: A playlist to be rated or possibly null if the status is 'waitingForPlaylists' and this playlist hasn't been submitted yet.
                       type: object
                       nullable: true
                       properties:
@@ -233,6 +237,8 @@ paths:
                                       description: The name of the player who gave the rating.
                                       type: string
         "400":
+          description: Invalid input.
+        "404":
           description: Invalid code supplied.
         "500":
           description: Internal server error.
@@ -272,7 +278,7 @@ paths:
               type: object
               properties:
                 playerNames:
-                  description: The names of all players for this game (all must be unique).
+                  description: The names of all players for this game (all must be unique, over 1 character, and alphanumeric).
                   type: array
                   items:
                     description: A player name.
@@ -288,6 +294,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  masterCode:
+                    description: The master code for this game.
+                    type: string
                   players:
                     description: The players in this game.
                     type: array
