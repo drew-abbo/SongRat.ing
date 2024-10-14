@@ -93,13 +93,14 @@ paths:
         "500":
           description: Internal server error.
 
+  "/game/player/{code}/rateSong":
     post:
-      summary: Submit rating data for songs for a player.
-      description: Submit a rating for all songs in all playlists for a player given their code.
-      operationId: rateSongsForPlayer
+      summary: Submit rating data for a song for a player.
+      description: Submit a rating for 1 song in 1 playlist for a player given their code.
+      operationId: rateSongForPlayer
       parameters:
         - name: code
-          description: A player code for the player/game to submit ratings for.
+          description: A player code for the player/game to submit a rating for.
           in: path
           required: true
           schema:
@@ -111,31 +112,23 @@ paths:
             schema:
               type: object
               properties:
-                playerCode:
-                  description: The player code to submit ratings under.
+                songId:
+                  description: The ID of the song to rate.
                   type: string
-                songs:
-                  description: All songs in the playlist with their ratings.
-                  type: array
-                  items:
-                    description: A song and its rating.
-                    type: object
-                    properties:
-                      songId:
-                        description: The ID of this song.
-                        type: string
-                      rating:
-                        description: The rating given to this song.
-                        type: number
-                        format: float
-                        nullable: true
+                rating:
+                  description: The rating given to this song.
+                  type: number
+                  format: float
+                  nullable: true
       responses:
         "201":
-          description: Songs rated successfully.
+          description: Song rated successfully.
         "400":
           description: Invalid input.
+        "403":
+          description: Song ID belongs to player's playlist (players can't rate their own songs).
         "404":
-          description: Invalid code supplied.
+          description: Invalid code or song ID supplied.
         "500":
           description: Internal server error.
 
@@ -236,6 +229,9 @@ paths:
                                     playerName:
                                       description: The name of the player who gave the rating.
                                       type: string
+                                    playerCode:
+                                      description: The code for this player.
+                                      type: string
         "400":
           description: Invalid input.
         "404":
@@ -243,7 +239,7 @@ paths:
         "500":
           description: Internal server error.
 
-  /game/end/{code}:
+  /game/{code}/end:
     post:
       summary: End a game.
       description: End a game, closing out all ratings (all ratings must be in).
