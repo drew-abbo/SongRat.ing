@@ -1,6 +1,9 @@
 # Documentation
 openapi.yml
 
+# output folder
+dist/
+
 # Data Files
 data.json
 
