@@ -8,12 +8,16 @@ CREATE TABLE IF NOT EXISTS games (
     game_name VARCHAR(255) NOT NULL,
     game_description TEXT NOT NULL,
     game_status game_status_enum NOT NULL DEFAULT 'waiting_for_players',
-    min_songs_per_playlist SMALLINT CHECK (min_songs_per_playlist IS NULL OR
-        (min_songs_per_playlist > 0 AND
-            (max_songs_per_playlist IS NULL OR min_songs_per_playlist <= max_songs_per_playlist))),
-    max_songs_per_playlist SMALLINT CHECK (max_songs_per_playlist IS NULL OR
-        (max_songs_per_playlist > 0 AND
-            (min_songs_per_playlist IS NULL OR max_songs_per_playlist <= min_songs_per_playlist))),
+    min_songs_per_playlist SMALLINT NOT NULL DEFAULT 1 CHECK (
+        min_songs_per_playlist >= 1 AND
+        min_songs_per_playlist <= 100 AND
+        min_songs_per_playlist <= max_songs_per_playlist
+    ),
+    max_songs_per_playlist SMALLINT NOT NULL DEFAULT 100 CHECK (
+        max_songs_per_playlist >= 1 AND
+        max_songs_per_playlist <= 100 AND
+        min_songs_per_playlist <= max_songs_per_playlist
+    ),
     require_playlist_link BOOLEAN NOT NULL,
     invite_code CHAR(16) UNIQUE,
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP

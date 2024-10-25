@@ -35,24 +35,22 @@ paths:
                   description:
                     The minimum number of songs allowed in any playlist. Must be <=
                     'max_songs_per_playlist' if 'max_songs_per_playlist' isn't null.
-                  nullable: true
                   type: integer
                   minimum: 1
+                  maximum: 100
                 max_songs_per_playlist:
                   description:
                     The maximum number of songs allowed in any playlist. Must be >=
                     'min_songs_per_playlist' if 'min_songs_per_playlist' isn't null.
-                  nullable: true
                   type: integer
                   minimum: 1
+                  maximum: 100
                 require_playlist_link:
                   description: Whether players are required to provide a playlist link.
                   type: boolean
               required:
                 - game_name
                 - game_description
-                - min_songs_per_playlist
-                - max_songs_per_playlist
                 - require_playlist_link
       responses:
         "201":
@@ -106,14 +104,14 @@ paths:
                     type: string
                   min_songs_per_playlist:
                     description: The minimum number of songs allowed in any playlist.
-                    nullable: true
                     type: integer
                     minimum: 1
+                    maximum: 100
                   max_songs_per_playlist:
                     description: The maximum number of songs allowed in any playlist.
-                    nullable: true
                     type: integer
                     minimum: 1
+                    maximum: 100
                   require_playlist_link:
                     description: Whether players are required to provide a playlist link.
                     type: boolean
@@ -244,14 +242,14 @@ paths:
                       - finished
                   min_songs_per_playlist:
                     description: The minimum number of songs allowed in any playlist.
-                    nullable: true
                     type: integer
                     minimum: 1
+                    maximum: 100
                   max_songs_per_playlist:
                     description: The maximum number of songs allowed in any playlist.
-                    nullable: true
                     type: integer
                     minimum: 1
+                    maximum: 100
                   require_playlist_link:
                     description: Whether players are required to provide a playlist link.
                     type: boolean
@@ -484,14 +482,14 @@ paths:
                       - finished
                   min_songs_per_playlist:
                     description: The minimum number of songs allowed in any playlist.
-                    nullable: true
                     type: integer
                     minimum: 1
+                    maximum: 100
                   max_songs_per_playlist:
                     description: The maximum number of songs allowed in any playlist.
-                    nullable: true
                     type: integer
                     minimum: 1
+                    maximum: 100
                   require_playlist_link:
                     description: Whether players are required to provide a playlist link.
                     type: boolean
