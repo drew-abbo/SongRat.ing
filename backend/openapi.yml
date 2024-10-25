@@ -9,18 +9,85 @@ servers:
   - url: "http://localhost:3000"
 
 paths:
-  "/game/player/{code}":
+  # /game
+
+  /game/new:
+    post:
+      summary: Create a new game.
+      description: Create a new game by supplying game info.
+      operationId: create_game
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                game_name:
+                  description: The name for this game.
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                game_description:
+                  description: The description for this game.
+                  type: string
+                min_songs_per_playlist:
+                  description:
+                    The minimum number of songs allowed in any playlist. Must be <=
+                    'max_songs_per_playlist' if 'max_songs_per_playlist' isn't null.
+                  nullable: true
+                  type: integer
+                  minimum: 1
+                max_songs_per_playlist:
+                  description:
+                    The maximum number of songs allowed in any playlist. Must be >=
+                    'min_songs_per_playlist' if 'min_songs_per_playlist' isn't null.
+                  nullable: true
+                  type: integer
+                  minimum: 1
+                require_playlist_link:
+                  description: Whether players are required to provide a playlist link.
+                  type: boolean
+              required:
+                - game_name
+                - game_description
+                - min_songs_per_playlist
+                - max_songs_per_playlist
+                - require_playlist_link
+      responses:
+        "201":
+          description: Successfully created game.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  master_code:
+                    description: The master code for managing this game.
+                    type: string
+                    pattern: "^M[a-zA-Z0-9]{15}$"
+                  invite_code:
+                    description: The code players can use to join this game.
+                    type: string
+                    pattern: "^I[a-zA-Z0-9]{15}$"
+        "400":
+          description: Invalid input.
+        "500":
+          description: Internal server error.
+
+  /game/peek/{invite_code}:
     get:
-      summary: Get game information for a player.
-      description: Retrieve information about a game with a player code.
-      operationId: getGameInfoForPlayer
+      summary: Get some information about a game.
+      description: Retrieve some information about a game with an invite code.
+      operationId: peek_game_info
       parameters:
-        - name: code
-          description: A player code for the player/game to get info about.
+        - name: invite_code
+          description: An invite code for the game to get info about.
           in: path
           required: true
           schema:
             type: string
+            pattern: "^I[a-zA-Z0-9]{15}$"
       responses:
         "200":
           description: Successfully retrieved game information.
@@ -29,82 +96,45 @@ paths:
               schema:
                 type: object
                 properties:
-                  playerCode:
-                    description: The code that was given to access this info.
+                  game_name:
+                    description: The name of this game.
                     type: string
-                  playerName:
-                    description: The name of the player the code belongs to.
+                    minLength: 1
+                    maxLength: 255
+                  game_description:
+                    description: The description of this game.
                     type: string
-                  status:
-                    description: The state of the game.
-                    type: string
-                    enum:
-                      - waitingForPlaylists
-                      - active
-                      - finished
-                  playerCount:
-                    description: The number of players in the game.
+                  min_songs_per_playlist:
+                    description: The minimum number of songs allowed in any playlist.
+                    nullable: true
                     type: integer
-                  songsPerPlaylist:
-                    description: The number of songs per playlist for the game.
+                    minimum: 1
+                  max_songs_per_playlist:
+                    description: The maximum number of songs allowed in any playlist.
+                    nullable: true
                     type: integer
-                  playlists:
-                    description: A list of all playlists.
-                    type: array
-                    items:
-                      description: A playlist to be rated by this player or possibly null if the status is 'waitingForPlaylists' and this playlist hasn't been submitted yet
-                      type: object
-                      nullable: true
-                      properties:
-                        playerName:
-                          description: The name of the player this playlist belongs to.
-                          type: string
-                        playlistLink:
-                          description: A spotify link to this playlist.
-                          type: string
-                        songs:
-                          description: All songs in the playlist with their ratings.
-                          type: array
-                          items:
-                            description: A song and its rating.
-                            type: object
-                            properties:
-                              songId:
-                                description: The ID of this song.
-                                type: string
-                              songName:
-                                description: The name of the song.
-                                type: string
-                              artist:
-                                description: The name of the artist of the song.
-                                type: string
-                              songLink:
-                                description: A link to the song.
-                                type: string
-                              rating:
-                                description: The rating given to this song.
-                                type: number
-                                format: float
-                                nullable: true
-        "400":
-          description: Invalid input.
+                    minimum: 1
+                  require_playlist_link:
+                    description: Whether players are required to provide a playlist link.
+                    type: boolean
         "404":
-          description: Invalid code supplied.
+          description: Unknown 'invite_code' supplied.
         "500":
           description: Internal server error.
 
-  "/game/player/{code}/rateSong":
+  /game/join/{invite_code}:
     post:
-      summary: Submit rating data for a song for a player.
-      description: Submit a rating for 1 song in 1 playlist for a player given their code.
-      operationId: rateSongForPlayer
+      summary: Create a new player by joining a game.
+      description: Create a new player by joining a game with a game's invite code.
+      operationId: join_game
       parameters:
-        - name: code
-          description: A player code for the player/game to submit a rating for.
+        - name: invite_code
+          description: An invite code for the game to create a new player for.
           in: path
           required: true
           schema:
             type: string
+            pattern: "^I[a-zA-Z0-9]{15}$"
       requestBody:
         required: true
         content:
@@ -112,38 +142,83 @@ paths:
             schema:
               type: object
               properties:
-                songId:
-                  description: The ID of the song to rate.
+                player_name:
+                  description: The name for this player.
                   type: string
-                rating:
-                  description: The rating given to this song.
-                  type: number
-                  format: float
+                  minLength: 1
+                  maxLength: 255
+                playlist_link:
+                  description: The link for this player's playlist.
                   nullable: true
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                songs:
+                  description:
+                    A list of all songs in this player's playlist (must be within range of
+                    'min_songs_per_playlist' and 'max_songs_per_playlist').
+                  type: array
+                  items:
+                    description: A song.
+                    type: object
+                    properties:
+                      title:
+                        description: The name of this song.
+                        type: string
+                        minLength: 1
+                        maxLength: 255
+                      artist:
+                        description: The artist of this song.
+                        type: string
+                        minLength: 1
+                        maxLength: 255
+                    required:
+                      - title
+                      - artist
+              required:
+                - player_name
+                - playlist_link
+                - songs
       responses:
         "201":
-          description: Song rated successfully.
+          description: Game joined, player created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  player_code:
+                    description: The player code for managing this player.
+                    type: string
         "400":
           description: Invalid input.
-        "403":
-          description: Song ID belongs to player's playlist (players can't rate their own songs).
         "404":
-          description: Invalid code or song ID supplied.
+          description: Unknown 'invite_code' supplied.
+        "409":
+          description:
+            Invalid number of songs supplied (must be within range of 'min_songs_per_playlist' and
+            'max_songs_per_playlist'), name is already taken, or playlist link required but not
+            provided.
+        "410":
+          description: The 'invite_code' is for a game that has already begun.
         "500":
           description: Internal server error.
 
-  /game/{code}:
+  # /admin
+
+  /admin/review/{master_code}:
     get:
       summary: Get all information about a game.
       description: Retrieve information about a game with a master code.
-      operationId: getMasterGameInfo
+      operationId: admin_review_game
       parameters:
-        - name: code
+        - name: master_code
           description: A master code for the game to get info about.
           in: path
           required: true
           schema:
             type: string
+            pattern: "^M[a-zA-Z0-9]{15}$"
       responses:
         "200":
           description: Successfully retrieved game information.
@@ -152,22 +227,41 @@ paths:
               schema:
                 type: object
                 properties:
-                  masterCode:
-                    description: The code that was given to access this info.
+                  game_name:
+                    description: The name of this game.
+                    type: string
+                    minLength: 1
+                    maxLength: 255
+                  game_description:
+                    description: The description of this game.
                     type: string
                   status:
                     description: The state of the game.
                     type: string
                     enum:
-                      - waitingForPlaylists
+                      - waiting_for_players
                       - active
                       - finished
-                  playerCount:
-                    description: The number of players in the game.
+                  min_songs_per_playlist:
+                    description: The minimum number of songs allowed in any playlist.
+                    nullable: true
                     type: integer
-                  songsPerPlaylist:
-                    description: The number of songs per playlist for the game.
+                    minimum: 1
+                  max_songs_per_playlist:
+                    description: The maximum number of songs allowed in any playlist.
+                    nullable: true
                     type: integer
+                    minimum: 1
+                  require_playlist_link:
+                    description: Whether players are required to provide a playlist link.
+                    type: boolean
+                  invite_code:
+                    description:
+                      The code used to join this game or nothing if the game status is 'active' or
+                      'finished'.
+                    nullable: true
+                    type: string
+                    pattern: "^I[a-zA-Z0-9]{15}$"
                   players:
                     description: The players in this game.
                     type: array
@@ -175,97 +269,156 @@ paths:
                       description: A player in this game.
                       type: object
                       properties:
-                        playerCode:
-                          description: The code for this player.
+                        player_code:
+                          description: The player code for this player.
                           type: string
-                        playerName:
+                          pattern: "^P[a-zA-Z0-9]{15}$"
+                        player_name:
                           description: The name of this player.
                           type: string
-                  playlists:
-                    description: A list of all playlists.
+                          minLength: 1
+                          maxLength: 255
+                        playlist_link:
+                          description: A link to this player's playlist.
+                          nullable: true
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                  songs:
+                    description: A list of all songs, ordered by player id.
                     type: array
                     items:
-                      description: A playlist to be rated or possibly null if the status is 'waitingForPlaylists' and this playlist hasn't been submitted yet.
+                      description: A song.
                       type: object
-                      nullable: true
                       properties:
-                        playerName:
-                          description: The name of the player this playlist belongs to.
+                        song_id:
+                          description: The id for this song.
+                          type: integer
+                          minimum: 1
+                        player_name:
+                          description: The name of the player this song belongs to.
                           type: string
-                        playlistLink:
-                          description: A spotify link to this playlist.
+                          minLength: 1
+                          maxLength: 255
+                        title:
+                          description: The name of this song.
                           type: string
-                        songs:
-                          description: All songs in the playlist with their ratings.
-                          type: array
-                          items:
-                            description: A song and its rating.
-                            type: object
-                            properties:
-                              songId:
-                                description: The ID of this song.
-                                type: string
-                              songName:
-                                description: The name of the song.
-                                type: string
-                              artist:
-                                description: The name of the artist of the song.
-                                type: string
-                              songLink:
-                                description: A link to the song.
-                                type: string
-                              ratings:
-                                description: The ratings given to this song from all players.
-                                type: array
-                                items:
-                                  description: A rating given to this song and the player that gave it.
-                                  type: object
-                                  properties:
-                                    rating:
-                                      description: The rating given.
-                                      type: number
-                                      format: float
-                                      nullable: true
-                                    playerName:
-                                      description: The name of the player who gave the rating.
-                                      type: string
-                                    playerCode:
-                                      description: The code for this player.
-                                      type: string
-        "400":
-          description: Invalid input.
+                          minLength: 1
+                          maxLength: 255
+                        artist:
+                          description: The artist of this song.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                  ratings:
+                    description:
+                      A list of all ratings, ordered by song owner player id and then rater player
+                      id.
+                    type: array
+                    items:
+                      description: A rating for a song.
+                      type: object
+                      properties:
+                        song_id:
+                          description: The id for this song.
+                          type: integer
+                          minimum: 1
+                        player_name:
+                          description: The name of the player this song belongs to.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                        title:
+                          description: The name of this song.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                        artist:
+                          description: The artist of this song.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                        rater_player_name:
+                          description: The name of the player who entered this rating.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                        rating:
+                          description: The rating given to this song.
+                          type: number
+                          format: float
+                          minimum: 1.0
+                          maximum: 10.0
         "404":
-          description: Invalid code supplied.
+          description: Unknown 'master_code' supplied.
         "500":
           description: Internal server error.
 
-  /game/{code}/end:
+  /admin/begin/{master_code}:
+    post:
+      summary: Begin a game.
+      description:
+        Begin a game, opening up the ability for ratings to be given. No more players will be
+        allowed to join.
+      operationId: admin_begin_game
+      parameters:
+        - name: master_code
+          description: A master code for the game to begin.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^M[a-zA-Z0-9]{15}$"
+      responses:
+        "201":
+          description: Game begun successfully.
+        "404":
+          description: Unknown 'master_code' supplied.
+        "409":
+          description: Game begin failed because the game status is 'active' or 'finished'.
+        "500":
+          description: Internal server error.
+
+  /admin/end/{master_code}:
     post:
       summary: End a game.
-      description: End a game, closing out all ratings (all ratings must be in).
-      operationId: endGame
+      description:
+        End a game, closing out all ratings (all players must have rated all songs that aren't
+        theirs).
+      operationId: admin_end_game
       parameters:
-        - name: code
+        - name: master_code
           description: A master code for the game to end.
           in: path
           required: true
           schema:
             type: string
+            pattern: "^M[a-zA-Z0-9]{15}$"
       responses:
-        "200":
+        "201":
           description: Game ended successfully.
+        "404":
+          description: Unknown 'master_code' supplied.
         "409":
-          description: Game end failed because not all ratings were in.
-        "400":
-          description: Invalid input.
+          description:
+            Game end failed because not all ratings were in or the game status is
+            'waiting_for_players' or 'finished'.
         "500":
           description: Internal server error.
 
-  /game/new:
+  /admin/remove_player/{master_code}:
     post:
-      summary: Create a new game.
-      description: Create a new game by supplying game rules and player names.
-      operationId: createGame
+      summary: Remove a player from a game.
+      description: Remove a player and all ratings associated with them from a game.
+      operationId: admin_remove_player
+      parameters:
+        - name: master_code
+          description: A master code for the game to remove the player from.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^M[a-zA-Z0-9]{15}$"
       requestBody:
         required: true
         content:
@@ -273,26 +426,75 @@ paths:
             schema:
               type: object
               properties:
-                playerNames:
-                  description: The names of all players for this game (all must be unique, over 1 character, and alphanumeric).
-                  type: array
-                  items:
-                    description: A player name.
-                    type: string
-                songsPerPlaylist:
-                  description: The number of songs per playlist for the game.
-                  type: integer
+                player_code:
+                  description: The player code for the player to be removed.
+                  type: string
+                  pattern: "^P[a-zA-Z0-9]{15}$"
+              required:
+                - player_code
       responses:
         "201":
-          description: Game created successfully.
+          description: Player removed successfully.
+        "400":
+          description: Invalid input.
+        "404":
+          description: Unknown 'master_code' supplied.
+        "409":
+          description: Unknown 'player_code' supplied.
+        "500":
+          description: Internal server error.
+
+  # /player
+
+  /player/review/{player_code}:
+    get:
+      summary: Get all information about a game for this player.
+      description: Retrieve information about a game with a player code.
+      operationId: player_review_game
+      parameters:
+        - name: player_code
+          description: A player code for the player/game to get info about.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^P[a-zA-Z0-9]{15}$"
+      responses:
+        "200":
+          description: Successfully retrieved game information.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  masterCode:
-                    description: The master code for this game.
+                  game_name:
+                    description: The name of this game.
                     type: string
+                    minLength: 1
+                    maxLength: 255
+                  game_description:
+                    description: The description of this game.
+                    type: string
+                  status:
+                    description: The state of the game.
+                    type: string
+                    enum:
+                      - waiting_for_players
+                      - active
+                      - finished
+                  min_songs_per_playlist:
+                    description: The minimum number of songs allowed in any playlist.
+                    nullable: true
+                    type: integer
+                    minimum: 1
+                  max_songs_per_playlist:
+                    description: The maximum number of songs allowed in any playlist.
+                    nullable: true
+                    type: integer
+                    minimum: 1
+                  require_playlist_link:
+                    description: Whether players are required to provide a playlist link.
+                    type: boolean
                   players:
                     description: The players in this game.
                     type: array
@@ -300,13 +502,290 @@ paths:
                       description: A player in this game.
                       type: object
                       properties:
-                        playerCode:
-                          description: The code for this player.
-                          type: string
-                        playerName:
+                        player_name:
                           description: The name of this player.
                           type: string
+                          minLength: 1
+                          maxLength: 255
+                        playlist_link:
+                          description: A link to this player's playlist.
+                          nullable: true
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                  songs:
+                    description: A list of all songs and their rating, ordered by player id.
+                    type: array
+                    items:
+                      description: A song.
+                      type: object
+                      properties:
+                        song_id:
+                          description: The id for this song.
+                          type: integer
+                          minimum: 1
+                        player_name:
+                          description: The name of the player this song belongs to.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                        title:
+                          description: The name of this song.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                        artist:
+                          description: The artist of this song.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                        rating:
+                          description: The rating given to this song by this player.
+                          type: number
+                          format: float
+                          minimum: 1.0
+                          maximum: 10.0
+        "404":
+          description: Unknown 'player_code' supplied.
+        "500":
+          description: Internal server error.
+
+  /player/add_song/{player_code}:
+    post:
+      summary: Add a song to a player's playlist.
+      description: Add a song to a player's playlist given the player's player code.
+      operationId: player_add_song
+      parameters:
+        - name: player_code
+          description: A player code for the player/game to add a song for.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^P[a-zA-Z0-9]{15}$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                song_to_add:
+                  description: A song.
+                  type: object
+                  properties:
+                    title:
+                      description: The name of this song.
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                    artist:
+                      description: The artist of this song.
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                  required:
+                    - title
+                    - artist
+              required:
+                - song_to_add
+      responses:
+        "201":
+          description: Song added successfully.
         "400":
           description: Invalid input.
+        "404":
+          description: Unknown 'player_code' supplied.
+        "409":
+          description:
+            Operation results in an invalid number of songs (must be within range of
+            'min_songs_per_playlist' and 'max_songs_per_playlist') or the game status is not
+            'waiting_for_players'.
+        "500":
+          description: Internal server error.
+
+  /player/remove_song/{player_code}:
+    post:
+      summary: Remove a song from a player's playlist.
+      description: Remove a song from a player's playlist given the player's player code.
+      operationId: player_remove_song
+      parameters:
+        - name: player_code
+          description: A player code for the player/game to remove a song for.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^P[a-zA-Z0-9]{15}$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                song_id_to_remove:
+                  description: The id of the song to remove.
+                  type: integer
+                  minimum: 1
+              required:
+                - song_id_to_remove
+      responses:
+        "201":
+          description: Song removed successfully.
+        "400":
+          description: Invalid input.
+        "404":
+          description: Unknown 'player_code' supplied.
+        "409":
+          description:
+            Operation results in an invalid number of songs (must be within range of
+            'min_songs_per_playlist' and 'max_songs_per_playlist') or the game status is not
+            'waiting_for_players'.
+        "500":
+          description: Internal server error.
+
+  /player/replace_song/{player_code}:
+    post:
+      summary: Replace a song from a player's playlist with another one.
+      description:
+        Replace a song from a player's playlist with another one given the player's
+        player code.
+      operationId: player_replace_song
+      parameters:
+        - name: player_code
+          description: A player code for the player/game to replace a song for.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^P[a-zA-Z0-9]{15}$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                song_id_to_remove:
+                  description: The id of the song to remove.
+                  type: integer
+                  minimum: 1
+                song_to_add:
+                  description: A song.
+                  type: object
+                  properties:
+                    title:
+                      description: The name of this song.
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                    artist:
+                      description: The artist of this song.
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                  required:
+                    - title
+                    - artist
+              required:
+                - song_id_to_remove
+                - song_to_add
+      responses:
+        "201":
+          description: Song replaced successfully.
+        "400":
+          description: Invalid input.
+        "404":
+          description: Unknown 'player_code' supplied.
+        "409":
+          description: The game status is not 'waiting_for_players'.
+        "500":
+          description: Internal server error.
+
+  /player/change_playlist_link/{player_code}:
+    post:
+      summary: Change the playlist link for a player's playlist.
+      description: Change the playlist link for a player's playlist given the player's player code.
+      operationId: player_change_playlist_link
+      parameters:
+        - name: player_code
+          description: A player code for the player/game to change a playlist link for.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^P[a-zA-Z0-9]{15}$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                playlist_link:
+                  description: A link to a new playlist or null to remove the playlist link.
+                  nullable: true
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+              required:
+                - playlist_link
+      responses:
+        "201":
+          description: Playlist link changed successfully.
+        "400":
+          description: Invalid input.
+        "404":
+          description: Unknown 'player_code' supplied.
+        "409":
+          description: Playlist link required but not provided or the game status is not 'waiting_for_players'.
+        "500":
+          description: Internal server error.
+
+  /player/rate_song/{player_code}:
+    post:
+      summary: Rate a song for a player.
+      description: Rate a song for a player given the player's player code.
+      operationId: player_rate_song
+      parameters:
+        - name: player_code
+          description: A player code for the player/game to add a song for.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^P[a-zA-Z0-9]{15}$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                song_id:
+                  description: The id of the song to rate.
+                  type: integer
+                  minimum: 1
+                rating:
+                  description: The rating given to this song.
+                  type: number
+                  format: float
+                  minimum: 1.0
+                  maximum: 10.0
+              required:
+                - song_id
+                - rating
+      responses:
+        "201":
+          description: Song rated successfully.
+        "400":
+          description: Invalid input.
+        "404":
+          description: Unknown 'player_code' supplied.
+        "409":
+          description:
+            Invalid 'song_id' ('song_id' must be for a valid song tied to this game and must not be
+            owned by the rating plater) or the game status is not 'active'.
         "500":
           description: Internal server error.
