@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import Joi from "joi";
 
 /** The characters that are allowed to appear in a generated code. */
@@ -40,13 +40,6 @@ export function generate(kind: Kind): string {
   return ret;
 }
 
-/** A middleware function that validates a code parameter. */
-export type CodeValidatorMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => void;
-
 /**
  * Returns a middleware function that checks whether a request has a valid code
  * parameter. This is a factory function that returns a newly created function.
@@ -57,7 +50,7 @@ export type CodeValidatorMiddleware = (
  * // The code needs to start with 'P'.
  * const v = createValidator(Kind.PLAYER);
  */
-export function createValidatorMiddleware(kind: Kind): CodeValidatorMiddleware {
+export function createValidatorMiddleware(kind: Kind): RequestHandler {
   let codeKindName: string;
   switch (kind) {
     case Kind.ADMIN:
