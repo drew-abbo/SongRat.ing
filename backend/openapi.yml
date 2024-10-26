@@ -29,7 +29,7 @@ paths:
                   minLength: 1
                   maxLength: 255
                 game_description:
-                  description: The description for this game.
+                  description: The description for this game (can be empty).
                   type: string
                 min_songs_per_playlist:
                   description:
@@ -50,7 +50,6 @@ paths:
                   type: boolean
               required:
                 - game_name
-                - game_description
                 - require_playlist_link
       responses:
         "201":

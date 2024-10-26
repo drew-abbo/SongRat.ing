@@ -5,7 +5,7 @@ import Joi from "joi";
 export const schemas: { [key: string]: Joi.Schema } = Object.freeze({
   "/game/new": Joi.object({
     game_name: Joi.string().min(1).max(255).required(),
-    game_description: Joi.string().allow("").required(),
+    game_description: Joi.string().allow("").default(""),
     min_songs_per_playlist: Joi.number().integer().min(1).max(100).default(1),
     max_songs_per_playlist: Joi.number().integer().min(1).max(100).default(100),
     require_playlist_link: Joi.boolean().required(),
