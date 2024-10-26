@@ -54,9 +54,12 @@ export function regexForCode(kind: Kind): RegExp {
   return new RegExp(`^${kind as string}[a-zA-Z0-9]{${codeLength - 1}}$`);
 }
 
+const memoizationForCreateValidatorMiddleware = new Map<Kind, RequestHandler>();
+
 /**
  * Returns a middleware function that checks whether a request has a valid code
  * parameter. This is a factory function that returns a newly created function.
+ * This function is memoized.
  *
  * @example
  * // `v` is now a middleware function that validates a code.
@@ -65,6 +68,10 @@ export function regexForCode(kind: Kind): RegExp {
  * const v = createValidator(Kind.PLAYER);
  */
 export function createValidatorMiddleware(kind: Kind): RequestHandler {
+  if (memoizationForCreateValidatorMiddleware.has(kind)) {
+    return memoizationForCreateValidatorMiddleware.get(kind)!;
+  }
+
   let codeKindName: string;
   switch (kind) {
     case Kind.ADMIN:
@@ -81,7 +88,7 @@ export function createValidatorMiddleware(kind: Kind): RequestHandler {
   }
 
   // the result function is a closure that captures `codeKindName` and `kind`
-  return (req: Request, res: Response, next: NextFunction) => {
+  const ret = (req: Request, res: Response, next: NextFunction) => {
     const codeSchema = Joi.string().pattern(regexForCode(kind)).required();
 
     const { error, value } = codeSchema.validate(req.params[codeKindName]);
@@ -91,4 +98,7 @@ export function createValidatorMiddleware(kind: Kind): RequestHandler {
 
     next();
   };
+
+  memoizationForCreateValidatorMiddleware.set(kind, ret);
+  return ret;
 }
