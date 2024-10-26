@@ -1,11 +1,13 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 
 import * as code from "./code";
 import { validateBodyOnSchemaMiddleware } from "./schemas";
 
-const app = express();
+dotenv.config();
 const PORT = 3000;
+const app = express();
 
 app.use(cors());
 app.use(express.json());

@@ -13,7 +13,8 @@ services:
     build: ./backend
     ports:
       - "3000:3000"
-    command: node .
+    env_file:
+      - .env
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/song_rating_db
     depends_on:
