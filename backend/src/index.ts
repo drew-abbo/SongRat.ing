@@ -132,6 +132,19 @@ app.post(
   }
 );
 
+// 404 handler (deals with every other path)
+app.use((req: Request, res: Response) => {
+  return res.status(404).json({ message: "Resource not found" });
+});
+
+// translate any error responses from HTML to JSON
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  // if status unset use 500 error code
+  return res
+    .status(err.status || 500)
+    .json({ message: err.message || "Unknown error" });
+});
+
 app.listen(PORT, () => {
   console.log(`Backend listening on http://localhost:${PORT}`);
 });
