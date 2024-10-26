@@ -3,11 +3,11 @@ import { Request, Response, NextFunction, RequestHandler } from "express";
 import Joi from "joi";
 
 /** The characters that are allowed to appear in a generated code. */
-const codeCharacterPool =
+export const codeCharacterPool =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 /** The length of any code. */
-const codeLength = 16;
+export const codeLength = 16;
 
 /**
  * The possible kinds of codes.
@@ -22,7 +22,7 @@ export enum Kind {
 /**
  * Generates a code string.
  *
- * @param kind A prefix for the generated code.
+ * @param kind The kind of code to generate.
  * @returns The generated code string.
  *
  * @example
@@ -38,6 +38,20 @@ export function generate(kind: Kind): string {
   }
 
   return ret;
+}
+
+/**
+ * Generates a regex to match a kind of code.
+ *
+ * @param kind The kind of code to match.
+ * @returns The generated regex.
+ *
+ * @example
+ * // `r` would be /^$P[a-zA-Z0-9]{15}$/
+ * const r = regexForCode(Kind.PLAYER);
+ */
+export function regexForCode(kind: Kind): RegExp {
+  return new RegExp(`^${kind as string}[a-zA-Z0-9]{${codeLength - 1}}$`);
 }
 
 /**
@@ -68,9 +82,7 @@ export function createValidatorMiddleware(kind: Kind): RequestHandler {
 
   // the result function is a closure that captures `codeKindName` and `kind`
   return (req: Request, res: Response, next: NextFunction) => {
-    const codeSchema = Joi.string()
-      .pattern(new RegExp(`^${kind as string}[a-zA-Z0-9]{${codeLength - 1}}$`))
-      .required();
+    const codeSchema = Joi.string().pattern(regexForCode(kind)).required();
 
     const { error, value } = codeSchema.validate(req.params[codeKindName]);
     if (error) {
