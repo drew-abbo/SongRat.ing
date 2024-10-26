@@ -1,10 +1,18 @@
 import crypto from "crypto";
+import { Request, Response, NextFunction } from "express";
+import Joi from "joi";
 
-// the characters that are allowed to appear in a generated code
+/** The characters that are allowed to appear in a generated code. */
 const codeCharacterPool =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-/** The possible kinds of codes that can be generated. */
+/** The length of any code. */
+const codeLength = 16;
+
+/**
+ * The possible kinds of codes.
+ * All kinds must be represented by a single letter.
+ */
 export enum Kind {
   ADMIN = "M",
   PLAYER = "P",
@@ -14,23 +22,81 @@ export enum Kind {
 /**
  * Generates a code string.
  *
- * @param prefix A prefix for the generated code.
- * @param length The length of the generated code (must be a positive integer
- *  greater than the length of `prefix`).
+ * @param kind A prefix for the generated code.
  * @returns The generated code string.
- * @throws If the length is not a positive integer > 1.
+ *
+ * @example
+ * // `s` would be something like "PzP4Ajhrp1NTmYs1"
+ * const s = generate(Kind.PLAYER);
  */
-export function generate(prefix: Kind, length: number = 16): string {
-  if (!Number.isInteger(length) || length <= 1) {
-    throw new Error("Generated code length must be an integer > 1.");
-  }
+export function generate(kind: Kind): string {
+  const bytes = crypto.randomBytes(codeLength - 1);
 
-  const bytes = crypto.randomBytes(length - 1);
-
-  let ret: string = prefix;
+  let ret: string = kind;
   for (let i = 0; i < bytes.length; i++) {
     ret += codeCharacterPool[bytes[i] % codeCharacterPool.length];
   }
+
+  return ret;
+}
+
+/** A middleware function that validates a code parameter. */
+export type CodeValidatorMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => void;
+
+/** Memoization for the `createValidator` function. */
+const memoizationForCreateValidator = new Map<Kind, CodeValidatorMiddleware>();
+
+/**
+ * Returns a middleware function that checks whether a request has a valid code
+ * parameter. This function is memoized (results of function calls are cached).
+ * This is a factory function that returns a newly created function.
+ *
+ * @example
+ * // `v` is now a middleware function that validates a code.
+ * // The code needs to be called 'player_code'.
+ * // The code needs to start with 'P'.
+ * const v = createValidator(Kind.PLAYER);
+ */
+export function createValidatorMiddleware(kind: Kind): CodeValidatorMiddleware {
+  if (memoizationForCreateValidator.has(kind)) {
+    return memoizationForCreateValidator.get(kind)!;
+  }
+
+  let codeKindName: string;
+  switch (kind) {
+    case Kind.ADMIN:
+      codeKindName = "master_code";
+      break;
+    case Kind.PLAYER:
+      codeKindName = "player_code";
+      break;
+    case Kind.INVITE:
+      codeKindName = "invite_code";
+      break;
+    default: // compile error if this switch doesn't cover all cases
+      const exhaustiveCheck: never = kind;
+  }
+
+  // the result function is a closure that captures `codeKindName` and `kind`
+  const ret = (req: Request, res: Response, next: NextFunction) => {
+    const codeSchema = Joi.string()
+      .pattern(new RegExp(`^${kind as string}[a-zA-Z0-9]{${codeLength - 1}}$`))
+      .required();
+
+    const { error, value } = codeSchema.validate(req.params[codeKindName]);
+    if (error) {
+      return res.status(400).json({ message: error.details });
+    }
+
+    next();
+  };
+
+  // memoize
+  memoizationForCreateValidator.set(kind, ret);
 
   return ret;
 }
