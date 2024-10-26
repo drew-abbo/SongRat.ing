@@ -74,7 +74,7 @@ export function createValidatorMiddleware(kind: Kind): RequestHandler {
 
     const { error, value } = codeSchema.validate(req.params[codeKindName]);
     if (error) {
-      return res.status(400).json({ message: error.details });
+      return res.status(400).json({ message: error.message });
     }
 
     next();
