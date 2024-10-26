@@ -45,19 +45,22 @@ export async function createGame(req: Request, res: Response) {
 
 export async function peekGameInfo(req: Request, res: Response) {
   try {
-    const result = await db.query(
-      `SELECT
-        game_name,
-        game_description,
-        min_songs_per_playlist,
-        max_songs_per_playlist,
-        require_playlist_link
-      FROM games
-      WHERE invite_code = $1`,
-      [req.params.invite_code]
-    );
-    if (result.rows.length) {
-      return res.status(200).json(result.rows);
+    const gamesWithMatchingInviteCode = (
+      await db.query(
+        `SELECT
+          game_name,
+          game_description,
+          min_songs_per_playlist,
+          max_songs_per_playlist,
+          require_playlist_link
+        FROM games
+        WHERE invite_code = $1`,
+        [req.params.invite_code]
+      )
+    ).rows;
+
+    if (gamesWithMatchingInviteCode.length) {
+      return res.status(200).json(gamesWithMatchingInviteCode[0]);
     }
   } catch (err) {
     return basic500(res, err);
