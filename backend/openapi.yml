@@ -115,6 +115,8 @@ paths:
                   require_playlist_link:
                     description: Whether players are required to provide a playlist link.
                     type: boolean
+        "400":
+          description: Invalid input.
         "404":
           description: Unknown 'invite_code' supplied.
         "500":
@@ -348,6 +350,8 @@ paths:
                           format: float
                           minimum: 1.0
                           maximum: 10.0
+        "400":
+          description: Invalid input.
         "404":
           description: Unknown 'admin_code' supplied.
         "500":
@@ -371,6 +375,8 @@ paths:
       responses:
         "201":
           description: Game begun successfully.
+        "400":
+          description: Invalid input.
         "404":
           description: Unknown 'admin_code' supplied.
         "409":
@@ -396,6 +402,8 @@ paths:
       responses:
         "201":
           description: Game ended successfully.
+        "400":
+          description: Invalid input.
         "404":
           description: Unknown 'admin_code' supplied.
         "409":
@@ -544,6 +552,8 @@ paths:
                           format: float
                           minimum: 1.0
                           maximum: 10.0
+        "400":
+          description: Invalid input.
         "404":
           description: Unknown 'player_code' supplied.
         "500":
