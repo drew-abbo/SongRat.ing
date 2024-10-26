@@ -28,13 +28,17 @@ export const schemas: { [key: string]: Joi.Schema } = Object.freeze({
  *
  * If the body is invalid a 400 status is returned. The body may be updated
  * (e.g. default values filled in).
+ *
+ * > WARNING:
+ * > You cannot use this middleware with `app.use()` because it requires
+ * > routes to be pre-defined. Apply this middleware to each route individually.
  */
 export function validateBodyOnSchemaMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  const schema: Joi.Schema | undefined = schemas[req.route.path];
+  const schema: Joi.Schema | undefined = schemas[req.route?.path];
   if (!schema) {
     next();
     return;
