@@ -12,7 +12,7 @@ export const schemas: { [key: string]: Joi.Schema | null } = Object.freeze({
 
   "POST/game/new": Joi.object({
     game_name: Joi.string().min(1).max(255).required(),
-    game_description: Joi.string().allow("").default(""),
+    game_description: Joi.string().max(2500).allow("").default(""),
     min_songs_per_playlist: Joi.number().integer().min(1).max(100).default(1),
     max_songs_per_playlist: Joi.number().integer().min(1).max(100).default(100),
     require_playlist_link: Joi.boolean().required(),

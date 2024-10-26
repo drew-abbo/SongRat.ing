@@ -31,6 +31,7 @@ paths:
                 game_description:
                   description: The description for this game (can be empty).
                   type: string
+                  maxLength: 2500
                 min_songs_per_playlist:
                   description:
                     The minimum number of songs allowed in any playlist. Must be <=

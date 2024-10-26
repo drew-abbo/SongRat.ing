@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS games (
     game_id SERIAL PRIMARY KEY,
     master_code CHAR(16) NOT NULL UNIQUE,
     game_name VARCHAR(255) NOT NULL,
-    game_description TEXT NOT NULL,
+    game_description TEXT NOT NULL CHECK (char_length(game_description) < 2500),
     game_status game_status_enum NOT NULL DEFAULT 'waiting_for_players',
     min_songs_per_playlist SMALLINT NOT NULL DEFAULT 1 CHECK (
         min_songs_per_playlist >= 1 AND
