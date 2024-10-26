@@ -172,9 +172,10 @@ paths:
                     required:
                       - title
                       - artist
+                  minItems: 1
+                  maxItems: 100
               required:
                 - player_name
-                - playlist_link
                 - songs
       responses:
         "201":
@@ -637,8 +638,8 @@ paths:
         "409":
           description:
             Operation results in an invalid number of songs (must be within range of
-            'min_songs_per_playlist' and 'max_songs_per_playlist') or the game status is not
-            'waiting_for_players'.
+            'min_songs_per_playlist' and 'max_songs_per_playlist'), the game status is not
+            'waiting_for_players', or the provided 'song_id_to_remove' is invalid.
         "500":
           description: Internal server error.
 
@@ -696,7 +697,9 @@ paths:
         "404":
           description: Unknown 'player_code' supplied.
         "409":
-          description: The game status is not 'waiting_for_players'.
+          description:
+            The game status is not 'waiting_for_players' or the provided
+            'song_id_to_remove' is invalid.
         "500":
           description: Internal server error.
 
