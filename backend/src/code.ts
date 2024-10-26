@@ -47,13 +47,9 @@ export type CodeValidatorMiddleware = (
   next: NextFunction
 ) => void;
 
-/** Memoization for the `createValidator` function. */
-const memoizationForCreateValidator = new Map<Kind, CodeValidatorMiddleware>();
-
 /**
  * Returns a middleware function that checks whether a request has a valid code
- * parameter. This function is memoized (results of function calls are cached).
- * This is a factory function that returns a newly created function.
+ * parameter. This is a factory function that returns a newly created function.
  *
  * @example
  * // `v` is now a middleware function that validates a code.
@@ -62,10 +58,6 @@ const memoizationForCreateValidator = new Map<Kind, CodeValidatorMiddleware>();
  * const v = createValidator(Kind.PLAYER);
  */
 export function createValidatorMiddleware(kind: Kind): CodeValidatorMiddleware {
-  if (memoizationForCreateValidator.has(kind)) {
-    return memoizationForCreateValidator.get(kind)!;
-  }
-
   let codeKindName: string;
   switch (kind) {
     case Kind.ADMIN:
@@ -82,7 +74,7 @@ export function createValidatorMiddleware(kind: Kind): CodeValidatorMiddleware {
   }
 
   // the result function is a closure that captures `codeKindName` and `kind`
-  const ret = (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const codeSchema = Joi.string()
       .pattern(new RegExp(`^${kind as string}[a-zA-Z0-9]{${codeLength - 1}}$`))
       .required();
@@ -94,9 +86,4 @@ export function createValidatorMiddleware(kind: Kind): CodeValidatorMiddleware {
 
     next();
   };
-
-  // memoize
-  memoizationForCreateValidator.set(kind, ret);
-
-  return ret;
 }
