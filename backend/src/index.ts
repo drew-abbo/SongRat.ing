@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import * as code from "./code";
 import { validateBodyOnSchemaMiddleware } from "./schemas";
+import db from "./db";
 
 dotenv.config();
 const PORT = 3000;
