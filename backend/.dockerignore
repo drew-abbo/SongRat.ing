@@ -1,11 +1,8 @@
 # Documentation
 openapi.yml
 
-# output folder
-dist/
-
-# Data Files
-data.json
+# TypeScript output folder
+dist
 
 # Docker
 Dockerfile
@@ -20,4 +17,4 @@ yarn-debug.log*
 yarn-error.log*
 
 ## Dependency directories
-node_modules/
+node_modules
