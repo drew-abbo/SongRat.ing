@@ -45,13 +45,13 @@ export const schemas: { [key: string]: Joi.Schema | null } = Object.freeze({
 
   // /admin
 
-  "GET/admin/review/:master_code": null,
+  "GET/admin/review/:admin_code": null,
 
-  "POST/admin/begin/:master_code": null,
+  "POST/admin/begin/:admin_code": null,
 
-  "POST/admin/end/:master_code": null,
+  "POST/admin/end/:admin_code": null,
 
-  "POST/admin/remove_player/:master_code": Joi.object({
+  "POST/admin/remove_player/:admin_code": Joi.object({
     player_code: Joi.string()
       .pattern(code.regexForCode(code.Kind.PLAYER))
       .required(),

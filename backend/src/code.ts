@@ -14,7 +14,7 @@ export const codeLength = 16;
  * All kinds must be represented by a single letter.
  */
 export enum Kind {
-  ADMIN = "M",
+  ADMIN = "A",
   PLAYER = "P",
   INVITE = "I",
 }
@@ -75,7 +75,7 @@ export function createValidatorMiddleware(kind: Kind): RequestHandler {
   let codeKindName: string;
   switch (kind) {
     case Kind.ADMIN:
-      codeKindName = "master_code";
+      codeKindName = "admin_code";
       break;
     case Kind.PLAYER:
       codeKindName = "player_code";

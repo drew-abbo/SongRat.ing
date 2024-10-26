@@ -41,7 +41,7 @@ app.post(
 // /admin
 
 app.get(
-  "/admin/review/:master_code",
+  "/admin/review/:admin_code",
   code.createValidatorMiddleware(code.Kind.ADMIN),
   validateBodyOnSchemaMiddleware,
   (req: Request, res: Response) => {
@@ -50,7 +50,7 @@ app.get(
 );
 
 app.post(
-  "/admin/begin/:master_code",
+  "/admin/begin/:admin_code",
   code.createValidatorMiddleware(code.Kind.ADMIN),
   validateBodyOnSchemaMiddleware,
   (req: Request, res: Response) => {
@@ -59,7 +59,7 @@ app.post(
 );
 
 app.post(
-  "/admin/end/:master_code",
+  "/admin/end/:admin_code",
   code.createValidatorMiddleware(code.Kind.ADMIN),
   validateBodyOnSchemaMiddleware,
   (req: Request, res: Response) => {
@@ -68,7 +68,7 @@ app.post(
 );
 
 app.post(
-  "/admin/remove_player/:master_code",
+  "/admin/remove_player/:admin_code",
   code.createValidatorMiddleware(code.Kind.ADMIN),
   validateBodyOnSchemaMiddleware,
   (req: Request, res: Response) => {

@@ -60,10 +60,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  master_code:
-                    description: The master code for managing this game.
+                  admin_code:
+                    description: The admin code for managing this game.
                     type: string
-                    pattern: "^M[a-zA-Z0-9]{15}$"
+                    pattern: "^A[a-zA-Z0-9]{15}$"
                   invite_code:
                     description: The code players can use to join this game.
                     type: string
@@ -205,19 +205,19 @@ paths:
 
   # /admin
 
-  /admin/review/{master_code}:
+  /admin/review/{admin_code}:
     get:
       summary: Get all information about a game.
-      description: Retrieve information about a game with a master code.
+      description: Retrieve information about a game with an admin code.
       operationId: admin_review_game
       parameters:
-        - name: master_code
-          description: A master code for the game to get info about.
+        - name: admin_code
+          description: An admin code for the game to get info about.
           in: path
           required: true
           schema:
             type: string
-            pattern: "^M[a-zA-Z0-9]{15}$"
+            pattern: "^A[a-zA-Z0-9]{15}$"
       responses:
         "200":
           description: Successfully retrieved game information.
@@ -349,11 +349,11 @@ paths:
                           minimum: 1.0
                           maximum: 10.0
         "404":
-          description: Unknown 'master_code' supplied.
+          description: Unknown 'admin_code' supplied.
         "500":
           description: Internal server error.
 
-  /admin/begin/{master_code}:
+  /admin/begin/{admin_code}:
     post:
       summary: Begin a game.
       description:
@@ -361,24 +361,24 @@ paths:
         allowed to join.
       operationId: admin_begin_game
       parameters:
-        - name: master_code
-          description: A master code for the game to begin.
+        - name: admin_code
+          description: An admin code for the game to begin.
           in: path
           required: true
           schema:
             type: string
-            pattern: "^M[a-zA-Z0-9]{15}$"
+            pattern: "^A[a-zA-Z0-9]{15}$"
       responses:
         "201":
           description: Game begun successfully.
         "404":
-          description: Unknown 'master_code' supplied.
+          description: Unknown 'admin_code' supplied.
         "409":
           description: Game begin failed because the game status is 'active' or 'finished'.
         "500":
           description: Internal server error.
 
-  /admin/end/{master_code}:
+  /admin/end/{admin_code}:
     post:
       summary: End a game.
       description:
@@ -386,18 +386,18 @@ paths:
         theirs).
       operationId: admin_end_game
       parameters:
-        - name: master_code
-          description: A master code for the game to end.
+        - name: admin_code
+          description: An admin code for the game to end.
           in: path
           required: true
           schema:
             type: string
-            pattern: "^M[a-zA-Z0-9]{15}$"
+            pattern: "^A[a-zA-Z0-9]{15}$"
       responses:
         "201":
           description: Game ended successfully.
         "404":
-          description: Unknown 'master_code' supplied.
+          description: Unknown 'admin_code' supplied.
         "409":
           description:
             Game end failed because not all ratings were in or the game status is
@@ -405,19 +405,19 @@ paths:
         "500":
           description: Internal server error.
 
-  /admin/remove_player/{master_code}:
+  /admin/remove_player/{admin_code}:
     post:
       summary: Remove a player from a game.
       description: Remove a player and all ratings associated with them from a game.
       operationId: admin_remove_player
       parameters:
-        - name: master_code
-          description: A master code for the game to remove the player from.
+        - name: admin_code
+          description: An admin code for the game to remove the player from.
           in: path
           required: true
           schema:
             type: string
-            pattern: "^M[a-zA-Z0-9]{15}$"
+            pattern: "^A[a-zA-Z0-9]{15}$"
       requestBody:
         required: true
         content:
@@ -437,7 +437,7 @@ paths:
         "400":
           description: Invalid input.
         "404":
-          description: Unknown 'master_code' supplied.
+          description: Unknown 'admin_code' supplied.
         "409":
           description: Unknown 'player_code' supplied.
         "500":
