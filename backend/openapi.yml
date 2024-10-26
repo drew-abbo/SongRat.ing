@@ -15,7 +15,7 @@ paths:
     post:
       summary: Create a new game.
       description: Create a new game by supplying game info.
-      operationId: create_game
+      operationId: createGame
       requestBody:
         required: true
         content:
@@ -77,7 +77,7 @@ paths:
     get:
       summary: Get some information about a game.
       description: Retrieve some information about a game with an invite code.
-      operationId: peek_game_info
+      operationId: peekGameInfo
       parameters:
         - name: invite_code
           description: An invite code for the game to get info about.
@@ -124,7 +124,7 @@ paths:
     post:
       summary: Create a new player by joining a game.
       description: Create a new player by joining a game with a game's invite code.
-      operationId: join_game
+      operationId: joinGame
       parameters:
         - name: invite_code
           description: An invite code for the game to create a new player for.
@@ -209,7 +209,7 @@ paths:
     get:
       summary: Get all information about a game.
       description: Retrieve information about a game with an admin code.
-      operationId: admin_review_game
+      operationId: adminReviewGame
       parameters:
         - name: admin_code
           description: An admin code for the game to get info about.
@@ -359,7 +359,7 @@ paths:
       description:
         Begin a game, opening up the ability for ratings to be given. No more players will be
         allowed to join.
-      operationId: admin_begin_game
+      operationId: adminBeginGame
       parameters:
         - name: admin_code
           description: An admin code for the game to begin.
@@ -384,7 +384,7 @@ paths:
       description:
         End a game, closing out all ratings (all players must have rated all songs that aren't
         theirs).
-      operationId: admin_end_game
+      operationId: adminEndGame
       parameters:
         - name: admin_code
           description: An admin code for the game to end.
@@ -409,7 +409,7 @@ paths:
     post:
       summary: Remove a player from a game.
       description: Remove a player and all ratings associated with them from a game.
-      operationId: admin_remove_player
+      operationId: adminRemovePlayer
       parameters:
         - name: admin_code
           description: An admin code for the game to remove the player from.
@@ -449,7 +449,7 @@ paths:
     get:
       summary: Get all information about a game for this player.
       description: Retrieve information about a game with a player code.
-      operationId: player_review_game
+      operationId: playerReviewGame
       parameters:
         - name: player_code
           description: A player code for the player/game to get info about.
@@ -553,7 +553,7 @@ paths:
     post:
       summary: Add a song to a player's playlist.
       description: Add a song to a player's playlist given the player's player code.
-      operationId: player_add_song
+      operationId: playerAddSong
       parameters:
         - name: player_code
           description: A player code for the player/game to add a song for.
@@ -607,7 +607,7 @@ paths:
     post:
       summary: Remove a song from a player's playlist.
       description: Remove a song from a player's playlist given the player's player code.
-      operationId: player_remove_song
+      operationId: playerRemoveSong
       parameters:
         - name: player_code
           description: A player code for the player/game to remove a song for.
@@ -650,7 +650,7 @@ paths:
       description:
         Replace a song from a player's playlist with another one given the player's
         player code.
-      operationId: player_replace_song
+      operationId: playerReplaceSong
       parameters:
         - name: player_code
           description: A player code for the player/game to replace a song for.
@@ -708,7 +708,7 @@ paths:
     post:
       summary: Change the playlist link for a player's playlist.
       description: Change the playlist link for a player's playlist given the player's player code.
-      operationId: player_change_playlist_link
+      operationId: playerChangePlaylistLink
       parameters:
         - name: player_code
           description: A player code for the player/game to change a playlist link for.
@@ -748,7 +748,7 @@ paths:
     post:
       summary: Rate a song for a player.
       description: Rate a song for a player given the player's player code.
-      operationId: player_rate_song
+      operationId: playerRateSong
       parameters:
         - name: player_code
           description: A player code for the player/game to add a song for.
