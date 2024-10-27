@@ -102,24 +102,24 @@ export async function joinGame(req: Request, res: Response) {
       // get info about the game via the invite code
       client.query(
         `SELECT
-            game_id,
-            game_status,
-            min_songs_per_playlist,
-            max_songs_per_playlist,
-            require_playlist_link
-          FROM games
-          WHERE invite_code = $1`,
+          game_id,
+          game_status,
+          min_songs_per_playlist,
+          max_songs_per_playlist,
+          require_playlist_link
+        FROM games
+        WHERE invite_code = $1`,
         [req.params.invite_code]
       ),
 
       // check if the provided name already exists for the game
       client.query(
         `SELECT EXISTS (
-            SELECT p.player_name
-            FROM players AS p
-            JOIN games AS g ON p.game_id = g.game_id
-            WHERE g.invite_code = $1 AND p.player_name = $2
-          ) AS name_is_taken`,
+          SELECT p.player_name
+          FROM players AS p
+          JOIN games AS g ON p.game_id = g.game_id
+          WHERE g.invite_code = $1 AND p.player_name = $2
+        ) AS name_is_taken`,
         [req.params.invite_code, body.player_name]
       ),
     ]);
@@ -193,7 +193,7 @@ export async function joinGame(req: Request, res: Response) {
     // add songs
     await client.query(
       `INSERT INTO songs (player_id, title, artist)
-        VALUES ${fullSqlArgPlaceholder}`,
+      VALUES ${fullSqlArgPlaceholder}`,
       sqlArgs
     );
 
