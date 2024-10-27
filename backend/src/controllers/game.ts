@@ -40,12 +40,22 @@ export async function createGame(req: Request, res: Response) {
 }
 
 export async function peekGameInfo(req: Request, res: Response) {
+  type GameInfo = {
+    game_name: string;
+    game_description: string;
+    game_status?: string;
+    min_songs_per_playlist: number;
+    max_songs_per_playlist: number;
+    require_playlist_link: boolean;
+  };
+
   try {
-    const gamesWithMatchingInviteCode = (
+    const gameInfo: GameInfo | undefined = (
       await db.query(
         `SELECT
           game_name,
           game_description,
+          game_status,
           min_songs_per_playlist,
           max_songs_per_playlist,
           require_playlist_link
@@ -53,16 +63,17 @@ export async function peekGameInfo(req: Request, res: Response) {
         WHERE invite_code = $1`,
         [req.params.invite_code]
       )
-    ).rows;
+    ).rows[0];
 
-    if (gamesWithMatchingInviteCode.length) {
-      return res.status(200).json(gamesWithMatchingInviteCode[0]);
+    if (gameInfo && gameInfo.game_status === "waiting_for_players") {
+      delete gameInfo.game_status; // remove extra property
+      return res.status(200).json(gameInfo);
     }
   } catch (err) {
     return basic500(res, err);
   }
 
-  return res.status(404).json({ message: "Unknown invite code" });
+  return res.status(404).json({ message: "Unknown or expired invite code" });
 }
 
 export async function joinGame(req: Request, res: Response) {
