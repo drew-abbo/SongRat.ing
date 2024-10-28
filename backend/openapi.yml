@@ -236,7 +236,7 @@ paths:
                   game_description:
                     description: The description of this game.
                     type: string
-                  status:
+                  game_status:
                     description: The state of the game.
                     type: string
                     enum:
@@ -482,7 +482,7 @@ paths:
                   game_description:
                     description: The description of this game.
                     type: string
-                  status:
+                  game_status:
                     description: The state of the game.
                     type: string
                     enum:
