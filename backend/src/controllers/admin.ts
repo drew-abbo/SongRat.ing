@@ -218,7 +218,7 @@ export async function adminEndGame(req: Request, res: Response) {
     ).rowCount;
 
     if (rowsUpdated) {
-      return res.status(201).json({ message: "Game begun successfully" });
+      return res.status(201).json({ message: "Game ended successfully" });
     }
 
     // if it failed see if it failed because the admin code doesn't exist or
