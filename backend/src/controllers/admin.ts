@@ -3,10 +3,6 @@ import { Request, Response } from "express";
 import basic500 from "../middleware/basic500";
 import db from "../db";
 
-const notImplemented = (req: Request, res: Response) => {
-  res.status(501).json({ message: "Not implemented" });
-};
-
 /**
  * Returns whether a game exists given an admin code.
  * @param adminCode The admin code to check the existence of.
@@ -238,4 +234,21 @@ export async function adminEndGame(req: Request, res: Response) {
   }
 }
 
-export const adminRemovePlayer = notImplemented;
+export async function adminRemovePlayer(req: Request, res: Response) {
+  try {
+    const rowsUpdated = (
+      await db.query(
+        `DELETE FROM games
+        WHERE admin_code = $1`,
+        [req.params.admin_code]
+      )
+    ).rowCount;
+
+    if (rowsUpdated) {
+      return res.status(201).json({ message: "Player removed successfully" });
+    }
+    return unknownAdminCode(res);
+  } catch (err) {
+    return basic500(res, err);
+  }
+}
