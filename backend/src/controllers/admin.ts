@@ -155,26 +155,29 @@ export async function adminReviewGame(req: Request, res: Response) {
 
 export async function adminBeginGame(req: Request, res: Response) {
   try {
-    db.query(
-      `UPDATE games
-      SET game_status = 'active', invite_code = NULL
-      WHERE admin_code = $1 AND game_status = 'waiting_for_players'`,
-      [req.params.admin_code]
-    );
-    return res.status(201).json({ message: "Game begun successfully" });
-  } catch (err) {
+    const rowsUpdated = (
+      await db.query(
+        `UPDATE games
+        SET game_status = 'active', invite_code = NULL
+        WHERE admin_code = $1 AND game_status = 'waiting_for_players'`,
+        [req.params.admin_code]
+      )
+    ).rowCount;
+
+    if (rowsUpdated) {
+      return res.status(201).json({ message: "Game begun successfully" });
+    }
+
     // if it failed see if it failed because the admin code doesn't exist or
     // because the game status isn't 'waiting_for_players'
-    try {
-      if (await gameExists(req.params.admin_code)) {
-        return res.status(409).json({
-          message: "Can't begin an active or finished game",
-        });
-      }
-      return unknownAdminCode(res);
-    } catch (err) {
-      return basic500(res, err);
+    if (await gameExists(req.params.admin_code)) {
+      return res.status(409).json({
+        message: "Can't begin an active or finished game",
+      });
     }
+    return unknownAdminCode(res);
+  } catch (err) {
+    return basic500(res, err);
   }
 }
 
