@@ -181,5 +181,61 @@ export async function adminBeginGame(req: Request, res: Response) {
   }
 }
 
-export const adminEndGame = notImplemented;
+export async function adminEndGame(req: Request, res: Response) {
+  try {
+    const rowsUpdated = (
+      await db.query(
+        // update the game status for the game (the game must be active and have
+        // all ratings in, i.e. ratings = songs * (players - 1) must be true)
+        `WITH
+          song_count AS (
+            SELECT COUNT(1) AS total_songs
+            FROM songs AS s
+            JOIN players AS p ON s.player_id = p.player_id
+            JOIN games AS g ON p.game_id = g.game_id
+            WHERE g.admin_code = $1
+          ),
+          player_count AS (
+            SELECT COUNT(1) AS total_players
+            FROM players AS p
+            JOIN games AS g ON p.game_id = g.game_id
+            WHERE g.admin_code = $1
+          ),
+          rating_count AS (
+            SELECT COUNT(1) AS total_ratings
+            FROM ratings AS r
+            JOIN songs AS s ON r.song_id = s.song_id
+            JOIN players AS p ON s.player_id = p.player_id
+            JOIN games AS g ON p.game_id = g.game_id
+            WHERE g.admin_code = $1
+          )
+        UPDATE games
+        SET game_status = 'finished'
+        WHERE
+          admin_code = $1 AND
+          game_status = 'active' AND
+            (SELECT total_ratings FROM rating_count) =
+            (SELECT total_songs FROM song_count) *
+            ((SELECT total_players FROM player_count) - 1)`,
+        [req.params.admin_code]
+      )
+    ).rowCount;
+
+    if (rowsUpdated) {
+      return res.status(201).json({ message: "Game begun successfully" });
+    }
+
+    // if it failed see if it failed because the admin code doesn't exist or
+    // because the game status isn't 'active'
+    if (await gameExists(req.params.admin_code)) {
+      return res.status(409).json({
+        message: "Can't end a game that isn't active",
+      });
+    }
+    return unknownAdminCode(res);
+  } catch (err) {
+    return basic500(res, err);
+  }
+}
+
 export const adminRemovePlayer = notImplemented;
