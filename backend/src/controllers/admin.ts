@@ -126,7 +126,7 @@ export async function adminReviewGame(req: Request, res: Response) {
         JOIN players AS rater_p ON r.rater_player_id = rater_p.player_id
         JOIN games AS g ON rated_p.game_id = g.game_id
         WHERE g.admin_code = $1
-        ORDER BY rated_p.player_id, s.song_id`,
+        ORDER BY rated_p.player_id, s.song_id, r.rater_player_id`,
         [req.params.admin_code]
       ),
     ]);
