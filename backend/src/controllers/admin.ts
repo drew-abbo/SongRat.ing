@@ -225,7 +225,8 @@ export async function adminEndGame(req: Request, res: Response) {
     // because the game status isn't 'active'
     if (await gameExists(req.params.admin_code)) {
       return res.status(409).json({
-        message: "Can't end a game that isn't active",
+        message:
+          "Can't end a game that has missing ratings or that isn't active",
       });
     }
     return unknownAdminCode(res);
