@@ -264,7 +264,7 @@ paths:
                     type: string
                     pattern: "^I[a-zA-Z0-9]{15}$"
                   players:
-                    description: The players in this game.
+                    description: The players in this game ordered by player id.
                     type: array
                     items:
                       description: A player in this game.
@@ -286,7 +286,7 @@ paths:
                           minLength: 1
                           maxLength: 255
                   songs:
-                    description: A list of all songs, ordered by player id.
+                    description: A list of all songs in this game ordered by player id and song id.
                     type: array
                     items:
                       description: A song.
@@ -313,8 +313,8 @@ paths:
                           maxLength: 255
                   ratings:
                     description:
-                      A list of all ratings, ordered by song owner player id and then rater player
-                      id.
+                      A list of all ratings ordered by song owner player id, song id, and rater
+                      player id.
                     type: array
                     items:
                       description: A rating for a song.
@@ -503,7 +503,7 @@ paths:
                     description: Whether players are required to provide a playlist link.
                     type: boolean
                   players:
-                    description: The players in this game.
+                    description: The players in this game ordered by player id.
                     type: array
                     items:
                       description: A player in this game.
@@ -521,7 +521,7 @@ paths:
                           minLength: 1
                           maxLength: 255
                   songs:
-                    description: A list of all songs and their rating, ordered by player id.
+                    description: A list of all songs in this game ordered by player id and song id.
                     type: array
                     items:
                       description: A song.
@@ -546,8 +546,36 @@ paths:
                           type: string
                           minLength: 1
                           maxLength: 255
+                  ratings:
+                    description:
+                      A list of all ratings from this player ordered by song owner player id, and
+                      song id.
+                    type: array
+                    items:
+                      description: A rating for a song.
+                      type: object
+                      properties:
+                        song_id:
+                          description: The id for this song.
+                          type: integer
+                          minimum: 1
+                        player_name:
+                          description: The name of the player this song belongs to.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                        title:
+                          description: The name of this song.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                        artist:
+                          description: The artist of this song.
+                          type: string
+                          minLength: 1
+                          maxLength: 255
                         rating:
-                          description: The rating given to this song by this player.
+                          description: The rating given to this song.
                           type: number
                           format: float
                           minimum: 1.0
