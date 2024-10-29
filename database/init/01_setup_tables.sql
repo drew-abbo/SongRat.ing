@@ -52,8 +52,13 @@ CREATE TABLE IF NOT EXISTS ratings (
 
 -- create indexes on fields that are typically used for joins
 -- these tables are read from far more then they're written to
+
 CREATE INDEX idx_games_admin_code ON games(admin_code);
+
 CREATE INDEX idx_players_game_id_player_id ON players(game_id, player_id);
+CREATE INDEX idx_players_player_code ON players(player_code);
+
+CREATE INDEX idx_songs_player_id_song_id ON songs(player_id, song_id);
 CREATE INDEX idx_songs_player_id ON songs(player_id);
 
 -- the lack of an index on the ratings table is because it has significantly
