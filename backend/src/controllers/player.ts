@@ -339,5 +339,56 @@ export async function playerReplaceSong(req: Request, res: Response) {
   }
 }
 
-export const playerChangePlaylistLink = notImplemented;
+export async function playerChangePlaylistLink(req: Request, res: Response) {
+  // get a client for a transaction
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const gameInfo:
+      | { game_status: string; require_playlist_link: boolean }
+      | undefined = (
+      await client.query(
+        `SELECT
+          g.game_status,
+          g.require_playlist_link
+        FROM games AS g
+        JOIN players AS p ON p.game_id = g.game_id
+        WHERE p.player_code = $1`,
+        [req.params.player_code]
+      )
+    ).rows[0];
+    if (!gameInfo) {
+      return res;
+    }
+
+    if (gameInfo.game_status !== "waiting_for_players") {
+      return gameIsntWatingForPlayers(res);
+    }
+
+    if (gameInfo.require_playlist_link && !req.body.playlist_link) {
+      return res
+        .status(209)
+        .json({ message: "Playlist link required but not provided" });
+    }
+
+    await db.query(
+      `UPDATE players
+      SET playlist_link = $1
+      WHERE player_code = $2`,
+      [req.body.playlist_link, req.params.player_code]
+    );
+
+    await client.query("COMMIT");
+    return res
+      .status(201)
+      .json({ message: "Playlist link updated successfully" });
+  } catch (err) {
+    return basic500(res, err);
+  } finally {
+    client.release();
+  }
+}
+
 export const playerRateSong = notImplemented;
