@@ -283,6 +283,61 @@ export async function playerRemoveSong(req: Request, res: Response) {
   }
 }
 
-export const playerReplaceSong = notImplemented;
+export async function playerReplaceSong(req: Request, res: Response) {
+  // get a client for a transaction
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const gameInfo: { game_status: string; player_id: number } | undefined = (
+      await client.query(
+        `SELECT
+          g.game_status,
+          p.player_id
+        FROM games AS g
+        JOIN players AS p ON p.game_id = g.game_id
+        WHERE p.player_code = $1`,
+        [req.params.player_code]
+      )
+    ).rows[0];
+    if (!gameInfo) {
+      return res;
+    }
+
+    if (gameInfo.game_status !== "waiting_for_players") {
+      return gameIsntWatingForPlayers(res);
+    }
+
+    const replaceCount = (
+      await client.query(
+        `UPDATE songs
+        SET
+          title = $1,
+          artist = $2
+        WHERE
+          player_id = $3 AND
+          song_id = $4`,
+        [
+          req.body.song_to_add.title,
+          req.body.song_to_add.artist,
+          gameInfo.player_id,
+          req.body.song_id_to_remove,
+        ]
+      )
+    ).rowCount;
+    if (!replaceCount) {
+      return res.status(409).json({ message: "Invalid song id" });
+    }
+
+    await client.query("COMMIT");
+    return res.status(201).json({ message: "Song updated successfully" });
+  } catch (err) {
+    return basic500(res, err);
+  } finally {
+    client.release();
+  }
+}
+
 export const playerChangePlaylistLink = notImplemented;
 export const playerRateSong = notImplemented;
