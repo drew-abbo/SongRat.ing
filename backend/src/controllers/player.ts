@@ -3,11 +3,6 @@ import { PoolClient, Pool } from "pg";
 
 import basic500 from "../middleware/basic500";
 import db from "../db";
-import { ResolveFnOutput } from "module";
-
-const notImplemented = (req: Request, res: Response) => {
-  res.status(501).json({ message: "Not implemented" });
-};
 
 /** Returns a 404 with the message "Unknown player code". */
 function unknownPlayerCode(res: Response) {
@@ -234,6 +229,7 @@ export async function playerAddSong(req: Request, res: Response) {
     await client.query("COMMIT");
     return res.status(201).json({ message: "Song added successfully" });
   } catch (err) {
+    await client.query("ROLLBACK");
     return basic500(res, err);
   } finally {
     client.release();
@@ -277,6 +273,7 @@ export async function playerRemoveSong(req: Request, res: Response) {
     await client.query("COMMIT");
     return res.status(201).json({ message: "Song removed successfully" });
   } catch (err) {
+    await client.query("ROLLBACK");
     return basic500(res, err);
   } finally {
     client.release();
@@ -302,7 +299,7 @@ export async function playerReplaceSong(req: Request, res: Response) {
       )
     ).rows[0];
     if (!gameInfo) {
-      return res;
+      return unknownPlayerCode(res);
     }
 
     if (gameInfo.game_status !== "waiting_for_players") {
@@ -333,6 +330,7 @@ export async function playerReplaceSong(req: Request, res: Response) {
     await client.query("COMMIT");
     return res.status(201).json({ message: "Song updated successfully" });
   } catch (err) {
+    await client.query("ROLLBACK");
     return basic500(res, err);
   } finally {
     client.release();
@@ -360,7 +358,7 @@ export async function playerChangePlaylistLink(req: Request, res: Response) {
       )
     ).rows[0];
     if (!gameInfo) {
-      return res;
+      return unknownPlayerCode(res);
     }
 
     if (gameInfo.game_status !== "waiting_for_players") {
@@ -385,10 +383,89 @@ export async function playerChangePlaylistLink(req: Request, res: Response) {
       .status(201)
       .json({ message: "Playlist link updated successfully" });
   } catch (err) {
+    await client.query("ROLLBACK");
     return basic500(res, err);
   } finally {
     client.release();
   }
 }
 
-export const playerRateSong = notImplemented;
+export async function playerRateSong(req: Request, res: Response) {
+  // get a client for a transaction
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const [gameInfoQueryResult, songInfoQueryResult] = await Promise.all([
+      // get game info
+      client.query(
+        `SELECT
+          g.game_status,
+          g.game_id,
+          p.player_id
+        FROM games AS g
+        JOIN players AS p ON p.game_id = g.game_id
+        WHERE p.player_code = $1`,
+        [req.params.player_code]
+      ),
+
+      // get song info
+      client.query(
+        `SELECT
+          s.song_id,
+          p.player_id,
+          g.game_id
+        FROM songs AS s
+        JOIN players AS p ON s.player_id = p.player_id
+        JOIN games AS g ON p.game_id = g.game_id
+        WHERE s.song_id = $1`,
+        [req.body.song_id]
+      ),
+    ]);
+
+    const gameInfo:
+      | { game_status: string; game_id: number; player_id: number }
+      | undefined = gameInfoQueryResult.rows[0];
+    if (!gameInfo) {
+      return unknownPlayerCode(res);
+    }
+
+    if (gameInfo.game_status !== "active") {
+      return res.status(409).json({
+        message:
+          "Playlists cannot be modified unless the game status is active",
+      });
+    }
+
+    const songInfo:
+      | { song_id: number; player_id: number; game_id: number }
+      | undefined = songInfoQueryResult.rows[0];
+    if (
+      !songInfo ||
+      songInfo.game_id !== gameInfo.game_id ||
+      songInfo.player_id === gameInfo.player_id
+    ) {
+      return res.status(409).json({ message: "Invalid song id" });
+    }
+
+    await db.query(
+      // insert new record or update the existing one
+      `INSERT INTO ratings (song_id, rater_player_id, rating)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (song_id, rater_player_id)
+      DO UPDATE SET rating = EXCLUDED.rating`,
+      [req.body.song_id, gameInfo.player_id, req.body.rating]
+    );
+
+    await client.query("COMMIT");
+    return res
+      .status(201)
+      .json({ message: "Rating submitted successfully" });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    return basic500(res, err);
+  } finally {
+    client.release();
+  }
+}
