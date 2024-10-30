@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
+import { PoolClient, Pool } from "pg";
 
 import basic500 from "../middleware/basic500";
 import db from "../db";
+import { ResolveFnOutput } from "module";
 
 const notImplemented = (req: Request, res: Response) => {
   res.status(501).json({ message: "Not implemented" });
@@ -10,6 +12,75 @@ const notImplemented = (req: Request, res: Response) => {
 /** Returns a 404 with the message "Unknown player code". */
 function unknownPlayerCode(res: Response) {
   return res.status(404).json({ message: "Unknown player code" });
+}
+
+/**
+ * Returns a 409 with a message about the operation resulting in an invalid song
+ * count.
+ */
+function operationMustResultInValidSongCount(res: Response) {
+  return res.status(409).json({
+    message:
+      "Operation would result in a song count outside of the range of " +
+      '"min_songs_per_playlist" to "min_songs_per_playlist"',
+  });
+}
+
+/**
+ * Returns a 409 with a message about the game status not being
+ * "waiting_for_players".
+ */
+function gameIsntWatingForPlayers(res: Response) {
+  return res.status(409).json({
+    message:
+      "Playlists cannot be modified unless the game status is waiting for " +
+      "players",
+  });
+}
+
+type BasicGameInfoForPlayer = {
+  song_count: number;
+  player_id: number;
+  min_songs_per_playlist: number;
+  max_songs_per_playlist: number;
+  game_status: string;
+};
+
+/**
+ * Returns the min and max songs per playlist. Updates the response if anything
+ * fails. This function can throw.
+ */
+async function getBasicGameInfo(
+  res: Response,
+  playerCode: string,
+  client: PoolClient | Pool = db
+): Promise<BasicGameInfoForPlayer | null> {
+  const ret =
+    (
+      await client.query(
+        `SELECT
+          COUNT(s.song_id) AS song_count,
+          p.player_id,
+          g.min_songs_per_playlist,
+          g.max_songs_per_playlist,
+          g.game_status
+        FROM players AS p
+        JOIN games AS g ON p.game_id = g.game_id
+        LEFT JOIN songs AS s ON s.player_id = p.player_id
+        WHERE p.player_code = $1
+        GROUP BY
+          p.player_id,
+          g.min_songs_per_playlist,
+          g.max_songs_per_playlist,
+          g.game_status`,
+        [playerCode]
+      )
+    ).rows[0] || null;
+
+  if (!ret) {
+    unknownPlayerCode(res);
+  }
+  return ret;
 }
 
 export async function playerReviewGame(req: Request, res: Response) {
@@ -127,7 +198,48 @@ export async function playerReviewGame(req: Request, res: Response) {
   }
 }
 
-export const playerAddSong = notImplemented;
+export async function playerAddSong(req: Request, res: Response) {
+  // get a client for a transaction
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const gameInfo = await getBasicGameInfo(
+      res,
+      req.params.player_code,
+      client
+    );
+    if (!gameInfo) {
+      return res;
+    }
+
+    if (gameInfo.game_status !== "waiting_for_players") {
+      return gameIsntWatingForPlayers(res);
+    }
+    if (gameInfo.song_count + 1 > gameInfo.max_songs_per_playlist) {
+      return operationMustResultInValidSongCount(res);
+    }
+
+    await client.query(
+      `INSERT INTO songs (player_id, title, artist)
+      VALUES ($1, $2, $3)`,
+      [
+        gameInfo.player_id,
+        req.body.song_to_add.title,
+        req.body.song_to_add.artist,
+      ]
+    );
+
+    await client.query("COMMIT");
+    return res.status(201).json({ message: "Song added successfully" });
+  } catch (err) {
+    return basic500(res, err);
+  } finally {
+    client.release();
+  }
+}
+
 export const playerRemoveSong = notImplemented;
 export const playerReplaceSong = notImplemented;
 export const playerChangePlaylistLink = notImplemented;
