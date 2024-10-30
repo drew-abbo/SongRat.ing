@@ -240,7 +240,49 @@ export async function playerAddSong(req: Request, res: Response) {
   }
 }
 
-export const playerRemoveSong = notImplemented;
+export async function playerRemoveSong(req: Request, res: Response) {
+  // get a client for a transaction
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const gameInfo = await getBasicGameInfo(
+      res,
+      req.params.player_code,
+      client
+    );
+    if (!gameInfo) {
+      return res;
+    }
+
+    if (gameInfo.game_status !== "waiting_for_players") {
+      return gameIsntWatingForPlayers(res);
+    }
+    if (gameInfo.song_count - 1 < gameInfo.min_songs_per_playlist) {
+      return operationMustResultInValidSongCount(res);
+    }
+
+    const removeCount = (
+      await client.query(
+        `DELETE FROM songs
+        WHERE player_id = $1 AND song_id = $2`,
+        [gameInfo.player_id, req.body.song_id_to_remove]
+      )
+    ).rowCount;
+    if (!removeCount) {
+      return res.status(409).json({ message: "Invalid song id" });
+    }
+
+    await client.query("COMMIT");
+    return res.status(201).json({ message: "Song removed successfully" });
+  } catch (err) {
+    return basic500(res, err);
+  } finally {
+    client.release();
+  }
+}
+
 export const playerReplaceSong = notImplemented;
 export const playerChangePlaylistLink = notImplemented;
 export const playerRateSong = notImplemented;
