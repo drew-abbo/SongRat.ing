@@ -9,6 +9,17 @@ servers:
   - url: "http://localhost:3000"
 
 paths:
+  /:
+    get:
+      summary: Check that the server is running.
+      description: Check that the server is running.
+      operationId: checkHealth
+      responses:
+        "200":
+          description: The server is up and running.
+        "500":
+          description: Internal server error.
+
   # /game
 
   /game/new:

@@ -15,6 +15,11 @@ app.use("/game", gameRoutes.routes);
 app.use("/admin", adminRoutes.routes);
 app.use("/player", playerRoutes.routes);
 
+// checkHealth operation
+app.get("/", (req: Request, res: Response) => {
+  return res.status(200).json({ message: "The server is up and running" });
+});
+
 // 404 handler (deals with every other path)
 app.use((req: Request, res: Response) => {
   return res.status(404).json({ message: "Resource not found" });
