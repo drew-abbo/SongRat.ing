@@ -7,6 +7,9 @@ services:
     volumes:
       - ./frontend/html:/usr/share/nginx/html
       - ./frontend/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      backend:
+        condition: service_healthy
 
   backend:
     container_name: backend
@@ -17,6 +20,10 @@ services:
       - .env
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/song_rating_db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 2s
+      retries: 10
     depends_on:
       - postgres
 
