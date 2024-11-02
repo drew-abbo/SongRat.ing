@@ -4,15 +4,106 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>My Static Site</title>
+    <title>Song Ratings Site</title>
 
     <link rel="stylesheet" href="styles.css" />
+    <script src="script.js"></script>
+
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .content {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        flex: 1;
+        box-sizing: border-box;
+        text-align: center;
+      }
+
+      .main-title {
+        font-size: clamp(40px, 8vw, 65px);
+        max-width: 600px;
+        padding-bottom: 50px;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+      }
+
+      .enter-code {
+        border-radius: 8px;
+        background-color: var(--color-white);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      .enter-code * {
+        border-radius: 8px;
+        padding: 15px;
+        font-size: 18px;
+        outline: none;
+        border: none;
+      }
+      .enter-code input {
+        background-color: var(--color-white);
+        color: var(--color-black);
+      }
+      .enter-code button {
+        text-align: center;
+        font-weight: bold;
+        background-color: var(--accent-color-3);
+      }
+      .enter-code button:hover {
+        background-color: var(--accent-color-2);
+      }
+      @media (max-width: 440px) {
+        .enter-code input {
+          width: 60vw;
+          text-align: center;
+        }
+        .enter-code button {
+          width: 100%;
+        }
+      }
+
+      #new-game-button {
+        margin-top: 40px;
+        border-radius: 8px;
+        padding: 15px;
+        font-size: 18px;
+        outline: none;
+        border: none;
+        text-align: center;
+        font-weight: bold;
+        background-color: var(--accent-color-3);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      #new-game-button:hover {
+        background-color: var(--accent-color-2);
+      }
+    </style>
   </head>
   <body>
-    <h1>Hello World!</h1>
+    <script>
+      components.top_nav_bar();
+    </script>
 
-    <p>This is a simple static site served by Nginx.</p>
+    <div class="content">
+      <h1 class="main-title">Song Rating Game</h1>
 
-    <script src="script.js"></script>
+      <div class="enter-code">
+        <input
+          id="enter-code-input"
+          type="text"
+          placeholder="Invite/Player/Admin Code"
+        />
+        <button id="enter-code-button">Go</button>
+      </div>
+
+      <button id="new-game-button">New Game</button>
+    </div>
   </body>
 </html>
