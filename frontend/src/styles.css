@@ -5,14 +5,13 @@
   --accent-color-3: #729b79; /* good contrast with black text */
   --accent-color-4: #475b63; /* good contrast with white text */
 
-  --text-color-white: #e2e2e2;
-  --text-color-black: #151515;
+  --color-white: #e2e2e2;
+  --color-black: #151515;
 }
 
-html,
 body {
   font-family: "Ronoto", sans-serif;
-  color: var(--text-color-white);
+  color: var(--color-white);
   margin: 0;
   padding: 0;
   background-color: var(--bg-color);
@@ -25,9 +24,10 @@ body {
   height: 50px;
   display: flex;
   align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 .top-nav-bar a {
-  color: var(--text-color-black);
+  color: var(--color-black);
   height: 100%;
   padding-left: 30px;
   padding-right: 30px;
