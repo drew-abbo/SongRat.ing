@@ -9,7 +9,6 @@ const components = Object.freeze({
       `<div class="top-nav-bar">
         <a href="/">Home</a>
         <a href="https://github.com/drew-abbo/song_rating_game">GitHub</a>
-        <a href="foo">foo</a>
       </div>`
     );
   },
