@@ -1,6 +1,42 @@
+:root {
+  --bg-color: #2e2c2f; /* good contrast with white text */
+  --accent-color-1: #f3e8ee; /* good contrast with black text */
+  --accent-color-2: #bacdb0; /* good contrast with black text */
+  --accent-color-3: #729b79; /* good contrast with black text */
+  --accent-color-4: #475b63; /* good contrast with white text */
+
+  --text-color-white: #e2e2e2;
+  --text-color-black: #151515;
+}
+
+html,
 body {
   font-family: "Ronoto", sans-serif;
-  color: #c9c9c9;
-  margin: 20px;
-  background-color: #191922;
+  color: var(--text-color-white);
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+}
+
+/* top navigation bar */
+.top-nav-bar {
+  background-color: var(--accent-color-3);
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+.top-nav-bar a {
+  color: var(--text-color-black);
+  height: 100%;
+  padding-left: 30px;
+  padding-right: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  font-weight: bold;
+}
+.top-nav-bar a:hover {
+  background-color: var(--accent-color-2);
 }
