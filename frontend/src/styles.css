@@ -5,12 +5,14 @@
   --accent-color-3: #729b79; /* good contrast with black text */
   --accent-color-4: #475b63; /* good contrast with white text */
 
+  --color-error: #ca4e4e; /* good contrast with dark background */
+
   --color-white: #e2e2e2;
   --color-black: #151515;
 }
 
 body {
-  font-family: "Ronoto", sans-serif;
+  font-family: "Roboto", sans-serif;
   color: var(--color-white);
   margin: 0;
   padding: 0;

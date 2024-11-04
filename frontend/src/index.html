@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Song Ratings Site</title>
+    <title>Song Rating Game</title>
 
     <link rel="stylesheet" href="styles.css" />
     <script src="script.js"></script>
@@ -28,14 +28,23 @@
         text-align: center;
       }
 
-      .main-title {
-        font-size: clamp(40px, 8vw, 65px);
-        max-width: 600px;
-        padding-bottom: 50px;
+      .content h1,
+      h2,
+      p {
         text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
       }
 
+      .main-title {
+        font-size: clamp(40px, 8vw, 65px);
+        max-width: 600px;
+      }
+
+      #invalid-code-reason {
+        color: var(--color-error);
+      }
+
       .enter-code {
+        margin-bottom: 20px;
         border-radius: 8px;
         background-color: var(--color-white);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -61,7 +70,7 @@
       }
       @media (max-width: 440px) {
         .enter-code input {
-          width:90%;
+          width: 90%;
           text-align: center;
         }
         .enter-code button {
@@ -70,14 +79,14 @@
       }
 
       #new-game-button {
-        margin-top: 40px;
+        margin: 20px 0;
         border-radius: 8px;
         padding: 15px;
         font-size: 18px;
-        outline: none;
-        border: none;
         text-align: center;
         font-weight: bold;
+        text-decoration: none;
+        color: var(--color-black);
         background-color: var(--accent-color-3);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
       }
@@ -94,16 +103,69 @@
     <div class="content">
       <h1 class="main-title">Song Rating Game</h1>
 
+      <div style="height: 50px">
+        <p id="invalid-code-reason"></p>
+      </div>
+
       <div class="enter-code">
         <input
           id="enter-code-input"
           type="text"
           placeholder="Invite/Player/Admin Code"
         />
-        <button id="enter-code-button">Go</button>
+        <button id="enter-code-button" onclick="enterCodeSubmit()">Go</button>
       </div>
 
-      <button id="new-game-button">New Game</button>
+      <h2>or</h2>
+
+      <a id="new-game-button" href="new_game">Create New Game</a>
     </div>
+
+    <script>
+      // fill the invite code with the last used player/admin code
+      const lastUsedCode = localStorage.getItem("lastUsedCode");
+      if (lastUsedCode) {
+        document.getElementById("enter-code-input").value = lastUsedCode;
+      }
+
+      function setInvalidCodeReason(reason = "Invalid Code") {
+        document.getElementById("invalid-code-reason").innerHTML = reason;
+      }
+
+      function enterCodeSubmit() {
+        const code = document.getElementById("enter-code-input").value;
+
+        if (!code) {
+          setInvalidCodeReason("Please enter a code");
+          return;
+        }
+        if (!/^[IPA][a-zA-Z0-9]{15}$/.test(code)) {
+          setInvalidCodeReason();
+          return;
+        }
+
+        // TODO: validate the code (w/ backend) and then redirect
+
+        if (code[0] === "I") {
+          alert("Invite code entered...");
+          setInvalidCodeReason("");
+          return;
+        }
+
+        alert((code[0] === "P" ? "Player" : "Admin") + " code entered...");
+        setInvalidCodeReason("");
+        localStorage.setItem("lastUsedCode", code);
+      }
+
+      // "Enter" on "enter-code-input" is the same as pressing "Go"
+      document
+        .getElementById("enter-code-input")
+        .addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            enterCodeSubmit();
+          }
+        });
+    </script>
   </body>
 </html>
