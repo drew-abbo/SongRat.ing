@@ -93,6 +93,8 @@
 
       #invalid-input-reason {
         color: var(--color-error);
+        margin: 10px 20px;
+        min-height: 40px;
       }
 
       #create-button {
@@ -147,9 +149,7 @@
         <input id="require-playlist-link" type="checkbox" checked />
       </label>
 
-      <div style="height: 50px">
-        <p id="invalid-input-reason"></p>
-      </div>
+      <p id="invalid-input-reason"></p>
 
       <button id="create-button">Create</button>
 
@@ -165,6 +165,85 @@
         gameDescTextBox.addEventListener("input", autoResizeTextarea);
         window.addEventListener("resize", autoResizeTextarea);
         window.addEventListener("load", autoResizeTextarea);
+
+        // ensures inputs with type="number" don't allow any non-numeric input
+        // (disables paste in the process)
+        document.querySelectorAll('input[type="number"]').forEach((input) => {
+          input.addEventListener("keypress", (event) => {
+            if (isNaN(String.fromCharCode(event.keyCode)))
+              event.preventDefault();
+          });
+          input.addEventListener("paste", (event) => {
+            event.preventDefault();
+          });
+        });
+
+        function setInvalidInputReason(reason) {
+          document.getElementById("invalid-input-reason").innerHTML = reason;
+        }
+
+        // Returns a valid song count from a string (in range [0, 100]) or null
+        // if it isn't valid. All whitespace strings return a default value.
+        function validateSongCount(str, defaultVal) {
+          str = str.trim();
+          if (str === "") {
+            return defaultVal;
+          }
+          if (!/^\d+$/.test(str)) {
+            return null;
+          }
+          const ret = Number(str);
+          return ret >= 1 && ret <= 100 ? ret : null;
+        }
+
+        // when the "Create" button is clicked
+        document
+          .getElementById("create-button")
+          .addEventListener("click", function () {
+            const gameName = document.getElementById("game-name").value;
+            if (!gameName) {
+              setInvalidInputReason("Please set a game name.");
+              return;
+            }
+
+            // ensure both songs per playlist values are valid
+            const minSongs = validateSongCount(
+              document.getElementById("min-songs").value,
+              1
+            );
+            const maxSongs = validateSongCount(
+              document.getElementById("max-songs").value,
+              100
+            );
+            if (!minSongs || !maxSongs || minSongs > maxSongs) {
+              setInvalidInputReason(
+                "Songs per playlist limits must be integers from 1-100 where " +
+                  "min ≤ max."
+              );
+              return;
+            }
+
+            const gameDescription =
+              document.getElementById("game-description").value;
+
+            const requirePlaylistLink = document.getElementById(
+              "require-playlist-link"
+            ).checked;
+
+            // disable the button (spam protection)
+            this.disabled = true;
+            this.textContent = "Creating...";
+            setInvalidInputReason("");
+
+            const requestJson = JSON.stringify({
+              game_name: gameName,
+              game_description: gameDescription,
+              min_songs_per_playlist: minSongs,
+              max_songs_per_playlist: maxSongs,
+              require_playlist_link: requirePlaylistLink,
+            });
+            alert(`Request JSON: ${requestJson}`);
+          });
       </script>
     </div>
   </body>
