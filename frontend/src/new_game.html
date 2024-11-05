@@ -194,6 +194,15 @@
         return ret >= 1 && ret <= 100 ? ret : null;
       }
 
+      function disableCreateButton() {
+        document.getElementById("create-button").disabled = true;
+      }
+      function enableCreateButton(cooldownMs = 5000) {
+        setTimeout(() => {
+          document.getElementById("create-button").disabled = false;
+        }, cooldownMs);
+      }
+
       // when the "Create" button is clicked
       document
         .getElementById("create-button")
@@ -228,19 +237,25 @@
             "require-playlist-link"
           ).checked;
 
-          // disable the button (spam protection)
-          this.disabled = true;
-          this.textContent = "Creating...";
           setInvalidInputReason("");
+          disableCreateButton();
 
-          const requestJson = JSON.stringify({
+          const requestJson = {
             game_name: gameName,
             game_description: gameDescription,
             min_songs_per_playlist: minSongs,
             max_songs_per_playlist: maxSongs,
             require_playlist_link: requirePlaylistLink,
-          });
-          alert(`Request JSON: ${requestJson}`);
+          };
+
+          sendRequest("POST", "/api/game/new", requestJson)
+            .then(([status, resJson]) => {
+              alert(JSON.stringify(resJson));
+            })
+            .catch((err) => {
+              setInvalidInputReason(err.message);
+              enableCreateButton();
+            });
         });
     </script>
   </body>
