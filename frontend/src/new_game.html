@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>New Song Rating Game</title>
+
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js"></script>
+
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .content {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        flex: 1;
+        box-sizing: border-box;
+        text-align: center;
+      }
+
+      #header {
+        margin-bottom: 20px;
+      }
+
+      .content h1,
+      h2,
+      label,
+      p {
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+      }
+
+      .content label {
+        margin-top: 30px;
+        margin-bottom: 10px;
+        font-size: 20px;
+      }
+
+      .content input,
+      textarea {
+        font-family: var(--site-font);
+        border-radius: 8px;
+        padding: 15px;
+        outline: none;
+        border: none;
+        background-color: var(--color-white);
+        color: var(--color-black);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        text-align: center;
+      }
+
+      .content input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--accent-color-3);
+      }
+
+      .required-label::after {
+        content: " *";
+        color: var(--color-error);
+        font-weight: bold;
+      }
+
+      #game-name {
+        width: 250px;
+      }
+      #game-description {
+        max-width: 700px;
+        width: 80%;
+        text-align: left;
+        resize: none;
+        overflow: hidden;
+      }
+
+      .row-of-items {
+        display: flex;
+        flex-direction: row;
+      }
+
+      #song-count-inputs input {
+        width: 50px;
+        margin: 0 5px;
+      }
+
+      #invalid-input-reason {
+        color: var(--color-error);
+      }
+
+      #create-button {
+        border-radius: 8px;
+        margin-bottom: 75px;
+        padding: 15px;
+        font-size: 18px;
+        outline: none;
+        border: none;
+        text-align: center;
+        font-weight: bold;
+        background-color: var(--accent-color-3);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      #create-button:hover {
+        background-color: var(--accent-color-2);
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      components.top_nav_bar();
+    </script>
+
+    <div class="content">
+      <h1 id="header">Create New Game</h1>
+
+      <label for="game-name" class="required-label">Game Name</label>
+      <input
+        id="game-name"
+        type="text"
+        placeholder="e.g. My Game"
+        maxlength="255"
+        required
+      />
+
+      <label for="game-description">Game Description</label>
+      <textarea
+        id="game-description"
+        placeholder="e.g. The rules of this game are..."
+        maxlength="2500"
+      ></textarea>
+
+      <label for="song-count-inputs">Songs Per Playlist</label>
+      <div id="song-count-inputs" class="row-of-items">
+        <input id="min-songs" type="number" placeholder="min" />
+        <input id="max-songs" type="number" placeholder="max" />
+      </div>
+
+      <label for="require-playlist-link">
+        Require Playlist Link
+        <input id="require-playlist-link" type="checkbox" checked />
+      </label>
+
+      <div style="height: 50px">
+        <p id="invalid-input-reason"></p>
+      </div>
+
+      <button id="create-button">Create</button>
+
+      <script>
+        // auto resize the game description text box to fit the content
+        const gameDescTextBox = document.getElementById("game-description");
+        function autoResizeTextarea() {
+          gameDescTextBox.style.height = "auto";
+          gameDescTextBox.style.height = `${
+            gameDescTextBox.scrollHeight - 27
+          }px`;
+        }
+        gameDescTextBox.addEventListener("input", autoResizeTextarea);
+        window.addEventListener("resize", autoResizeTextarea);
+        window.addEventListener("load", autoResizeTextarea);
+      </script>
+    </div>
+  </body>
+</html>

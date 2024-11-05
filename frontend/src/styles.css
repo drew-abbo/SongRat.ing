@@ -9,10 +9,12 @@
 
   --color-white: #e2e2e2;
   --color-black: #151515;
+
+  --site-font: "Roboto", sans-serif;
 }
 
 body {
-  font-family: "Roboto", sans-serif;
+  font-family: var(--site-font);
   color: var(--color-white);
   margin: 0;
   padding: 0;
