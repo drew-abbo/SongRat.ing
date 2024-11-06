@@ -11,12 +11,14 @@ export const codeLength = 16;
 
 /**
  * The possible kinds of codes.
- * All kinds must be represented by a single letter.
+ * All kinds must be represented by a single letter (with the exception of
+ * `ANY`).
  */
 export enum Kind {
   ADMIN = "A",
   PLAYER = "P",
   INVITE = "I",
+  ANY = "",
 }
 
 /**
@@ -51,7 +53,10 @@ export function generate(kind: Kind): string {
  * const r = regexForCode(Kind.PLAYER);
  */
 export function regexForCode(kind: Kind): RegExp {
-  return new RegExp(`^${kind as string}[a-zA-Z0-9]{${codeLength - 1}}$`);
+  const prefix =
+    kind !== Kind.ANY ? (kind as string) : `[${Object.values(Kind).join("")}]`;
+
+  return new RegExp(`^${prefix}[a-zA-Z0-9]{${codeLength - 1}}$`);
 }
 
 const memoizationForCreateValidatorMiddleware = new Map<Kind, RequestHandler>();
@@ -82,6 +87,9 @@ export function createValidatorMiddleware(kind: Kind): RequestHandler {
       break;
     case Kind.INVITE:
       codeKindName = "invite_code";
+      break;
+    case Kind.ANY:
+      codeKindName = "code";
       break;
     default: // compile error if this switch doesn't cover all cases
       const exhaustiveCheck: never = kind;

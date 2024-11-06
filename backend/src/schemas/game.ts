@@ -3,6 +3,8 @@ import Joi from "joi";
 import { SchemaMap } from "../middleware/body_validator";
 
 const schemas: SchemaMap = Object.freeze({
+  "GET/check_code/:code": null,
+
   "POST/new": Joi.object({
     game_name: Joi.string().min(1).max(255).required(),
     game_description: Joi.string().max(2500).allow("").default(""),

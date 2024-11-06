@@ -7,6 +7,13 @@ import * as controllers from "../controllers/game";
 
 export const routes = Router();
 
+routes.get(
+  "/check_code/:code",
+  code.createValidatorMiddleware(code.Kind.ANY),
+  jsonBody.createValidatorMiddleware(schemas),
+  controllers.checkCode
+);
+
 routes.post(
   "/new",
   jsonBody.createValidatorMiddleware(schemas),

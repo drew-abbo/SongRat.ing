@@ -22,6 +22,35 @@ paths:
 
   # /game
 
+  /game/check_code/{code}:
+    get:
+      summary: Get whether a code is valid.
+      description: Get whether an invite, player, or admin code is valid.
+      operationId: checkCode
+      parameters:
+        - name: code
+          description: An invite, player, or admin code.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^[IPA][a-zA-Z0-9]{15}$"
+      responses:
+        "200":
+          description: Code check succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_valid:
+                    description: Whether the code is valid.
+                    type: boolean
+        "400":
+          description: Invalid input.
+        "500":
+          description: Internal server error.
+
   /game/new:
     post:
       summary: Create a new game.

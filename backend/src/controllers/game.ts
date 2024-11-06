@@ -4,6 +4,44 @@ import * as code from "../middleware/code";
 import basic500 from "../middleware/basic500";
 import db from "../db";
 
+export async function checkCode(req: Request, res: Response) {
+  const code = req.params.code;
+
+  let query: string;
+  switch (code[0]) {
+    case "I":
+      query = `SELECT EXISTS (
+                SELECT 1
+                FROM games
+                WHERE invite_code = $1 AND game_status = 'waiting_for_players'
+              )`;
+      break;
+
+    case "P":
+      query = `SELECT EXISTS (
+                SELECT 1
+                FROM players
+                WHERE player_code = $1
+              )`;
+      break;
+
+    case "A":
+      query = `SELECT EXISTS (
+                SELECT 1
+                FROM games
+                WHERE admin_code = $1
+              )`;
+      break;
+  }
+
+  try {
+    const isValid: boolean = (await db.query(query!, [code])).rows[0].exists;
+    return res.status(200).json({ is_valid: isValid });
+  } catch (err) {
+    return basic500(res, err);
+  }
+}
+
 export async function createGame(req: Request, res: Response) {
   const adminCode = code.generate(code.Kind.ADMIN);
   const inviteCode = code.generate(code.Kind.INVITE);
