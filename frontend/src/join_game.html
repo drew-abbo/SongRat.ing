@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>New Song Rating Game</title>
+
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js"></script>
+
+    <style>
+      .content {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        flex: 1;
+        box-sizing: border-box;
+        text-align: center;
+      }
+
+      #header {
+        margin-bottom: 20px;
+      }
+
+      .dynamic-content {
+        visibility: hidden; /* start invisible */
+      }
+
+      #game-info {
+        margin: 10px;
+        padding: 0 25px;
+        border-radius: 25px;
+        border: 5px solid var(--accent-color-3);
+        background-color: white;
+        color: var(--color-black);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        width: 70%;
+        max-width: 600px;
+      }
+      #game-info * {
+        text-shadow: none;
+      }
+      #game-info pre {
+        white-space: pre-wrap;
+        text-align: left;
+        font-family: var(--site-font);
+      }
+      #game-info hr {
+        border: 1px solid var(--accent-color-2);
+      }
+
+      .content h1,
+      h2,
+      p {
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+      }
+
+      #error-message {
+        color: var(--color-error);
+        margin: 10px 20px;
+        min-height: 40px;
+      }
+
+      #join-button {
+        border-radius: 8px;
+        margin-bottom: 75px;
+        padding: 15px;
+        font-size: 18px;
+        outline: none;
+        border: none;
+        text-align: center;
+        font-weight: bold;
+        background-color: var(--accent-color-3);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      #join-button:hover {
+        background-color: var(--accent-color-2);
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      components.top_nav_bar();
+    </script>
+
+    <div class="content">
+      <p id="loading-msg">loading...</p>
+
+      <h1 id="header" class="dynamic-content">Join Game</h1>
+
+      <div id="game-info" class="dynamic-content"></div>
+
+      <p id="error-message" class="dynamic-content"></p>
+
+      <button id="join-button" class="dynamic-content">Join</button>
+    </div>
+
+    <script>
+      function makeDynamicElementsVisible() {
+        document.getElementById("loading-msg").remove();
+
+        document.querySelectorAll(".dynamic-content").forEach((element) => {
+          element.style.visibility = "visible";
+        });
+      }
+
+      function displayErrorScreen(msg) {
+        document.getElementById("loading-msg").remove();
+
+        document.getElementById("header").style.visibility = "visible";
+
+        const errorMessageElement = document.getElementById("error-message");
+        errorMessageElement.innerText = msg;
+        errorMessageElement.style.visibility = "visible";
+      }
+
+      // generate the dynamic content from the invite_code parameter in the url
+      (() => {
+        const inviteCode = new URLSearchParams(window.location.search).get(
+          "invite_code"
+        );
+
+        // validate invite code
+        if (!inviteCode) {
+          displayErrorScreen("No invite code provided.");
+          return;
+        }
+        if (!/^I[a-zA-Z0-9]{15}$/.test(inviteCode)) {
+          displayErrorScreen("The invite code has an invalid format.");
+          return;
+        }
+
+        // request server data with validated invite code
+        sendRequest("GET", `/api/game/peek/${inviteCode}`, undefined, [404])
+          .then(([status, resJson]) => {
+            const gameInfoDiv = document.getElementById("game-info");
+
+            if (status === 404) {
+              displayErrorScreen("The invite code is invalid or expired.");
+              return;
+            }
+
+            const gameName = resJson.gameName;
+            const minSongs = resJson.min_songs_per_playlist;
+            const maxSongs = resJson.max_songs_per_playlist;
+            const gameDescription = resJson.game_description;
+
+            // game name
+            const gameNameElement = document.createElement("h2");
+            gameNameElement.innerText = resJson.game_name;
+
+            // songs per playlist
+            const songsPerPlaylistElement = document.createElement("h4");
+            songsPerPlaylistElement.innerText =
+              (minSongs === maxSongs ? minSongs : `${minSongs}-${maxSongs}`) +
+              " songs per playlist";
+
+            const gameInfoElements = [gameNameElement, songsPerPlaylistElement];
+
+            // game description and a horizontal rule (if provided)
+            if (gameDescription) {
+              const gameDescriptionElement = document.createElement("pre");
+              gameDescriptionElement.innerText = gameDescription;
+              gameInfoElements.push(
+                document.createElement("hr"),
+                gameDescriptionElement
+              );
+            }
+
+            gameInfoDiv.replaceChildren(...gameInfoElements);
+            makeDynamicElementsVisible();
+          })
+          .catch((err) => {
+            displayErrorScreen(err.message);
+          });
+      })();
+    </script>
+  </body>
+</html>
