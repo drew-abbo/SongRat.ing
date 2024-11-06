@@ -16,9 +16,12 @@
 body {
   font-family: var(--site-font);
   color: var(--color-white);
+  background-color: var(--bg-color);
   margin: 0;
   padding: 0;
-  background-color: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 /* top navigation bar */
