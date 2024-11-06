@@ -123,32 +123,65 @@
         document.getElementById("enter-code-input").value = lastUsedCode;
       }
 
-      function setInvalidCodeReason(reason = "Invalid Code") {
+      function setInvalidCodeReason(reason) {
         document.getElementById("invalid-code-reason").innerHTML = reason;
       }
 
-      function enterCodeSubmit() {
+      function disableCodeSubmitButton() {
+        document.getElementById("enter-code-button").disabled = true;
+      }
+      function enableCodeSubmitButton(cooldownMs = 5000) {
+        setTimeout(() => {
+          document.getElementById("enter-code-button").disabled = false;
+        }, cooldownMs);
+      }
+
+      async function enterCodeSubmit() {
+        disableCodeSubmitButton();
         const code = document.getElementById("enter-code-input").value;
 
+        // validate code format
         if (!code) {
-          setInvalidCodeReason("Please enter a code");
+          setInvalidCodeReason("Please enter a code.");
+          enableCodeSubmitButton(0);
           return;
         }
         if (!/^[IPA][a-zA-Z0-9]{15}$/.test(code)) {
-          setInvalidCodeReason();
+          setInvalidCodeReason("The code has an invalid format.");
+          enableCodeSubmitButton();
           return;
         }
 
-        // TODO: validate the code (w/ backend) and then redirect
+        // validate code with backend
+        let codeIsValid = false;
+        try {
+          const [status, resJson] = await sendRequest(
+            "GET",
+            `/api/game/check_code/${code}`
+          );
+          if (!resJson.is_valid) {
+            setInvalidCodeReason(
+              code[0] === "I"
+                ? "The invite code is invalid or expired."
+                : `The ${code[0] === "P" ? "player" : "admin"} code is invalid.`
+            );
+            return;
+          }
+        } catch (err) {
+          setInvalidCodeReason(err.message);
+          return;
+        } finally {
+          enableCodeSubmitButton();
+        }
+
+        setInvalidCodeReason("");
 
         if (code[0] === "I") {
-          alert("Invite code entered...");
-          setInvalidCodeReason("");
+          window.location.href = `/join_game?invite_code=${code}`;
           return;
         }
 
         alert((code[0] === "P" ? "Player" : "Admin") + " code entered...");
-        setInvalidCodeReason("");
         localStorage.setItem("lastUsedCode", code);
       }
 
@@ -158,7 +191,11 @@
         .addEventListener("keydown", (event) => {
           if (event.key === "Enter") {
             event.preventDefault();
-            enterCodeSubmit();
+
+            // only works if the button isn't disabled
+            if (!document.getElementById("enter-code-button").disabled) {
+              enterCodeSubmit();
+            }
           }
         });
     </script>
