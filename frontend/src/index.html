@@ -130,7 +130,7 @@
       function disableCodeSubmitButton() {
         document.getElementById("enter-code-button").disabled = true;
       }
-      function enableCodeSubmitButton(cooldownMs = 5000) {
+      function enableCodeSubmitButton(cooldownMs = 500) {
         setTimeout(() => {
           document.getElementById("enter-code-button").disabled = false;
         }, cooldownMs);

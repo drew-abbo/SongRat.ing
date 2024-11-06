@@ -191,7 +191,7 @@
       function disableCreateButton() {
         document.getElementById("create-button").disabled = true;
       }
-      function enableCreateButton(cooldownMs = 5000) {
+      function enableCreateButton(cooldownMs = 500) {
         setTimeout(() => {
           document.getElementById("create-button").disabled = false;
         }, cooldownMs);
