@@ -201,7 +201,7 @@
       document
         .getElementById("create-button")
         .addEventListener("click", function () {
-          const gameName = document.getElementById("game-name").value;
+          const gameName = document.getElementById("game-name").value.trim();
           if (!gameName) {
             setInvalidInputReason("Please set a game name.");
             return;
@@ -224,8 +224,9 @@
             return;
           }
 
-          const gameDescription =
-            document.getElementById("game-description").value;
+          const gameDescription = document
+            .getElementById("game-description")
+            .value.trim();
 
           const requirePlaylistLink = document.getElementById(
             "require-playlist-link"
