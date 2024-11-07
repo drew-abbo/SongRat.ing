@@ -190,7 +190,7 @@
         </div>
       </div>
 
-      <label for="songs" class="required-label" >Songs</label>
+      <label for="songs" class="required-label">Songs</label>
       <div id="songs" class="dynamic-content"></div>
 
       <div id="song-inputs" class="dynamic-content"></div>
@@ -266,7 +266,9 @@
             const songsPerPlaylistElement = document.createElement("h4");
             songsPerPlaylistElement.innerText =
               (minSongs === maxSongs ? minSongs : `${minSongs}-${maxSongs}`) +
-              " songs per playlist";
+              " song" +
+              (minSongs === 1 && maxSongs === 1 ? "" : "s") +
+              " per playlist";
 
             const gameInfoElements = [gameNameElement, songsPerPlaylistElement];
 
