@@ -49,9 +49,6 @@
         text-align: left;
         font-family: var(--site-font);
       }
-      #game-info hr {
-        border: 1px solid var(--accent-color-2);
-      }
 
       .content h1,
       h2,
@@ -67,6 +64,10 @@
         background-color: var(--color-white);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         text-align: center;
+      }
+
+      .content hr {
+        border: 1px solid var(--accent-color-2);
       }
 
       @media (min-width: 500px) {
@@ -90,6 +91,44 @@
         content: " *";
         color: var(--color-error);
         font-weight: bold;
+      }
+
+      #songs {
+        border-radius: 25px;
+        padding: 1px;
+        border: 5px solid var(--accent-color-3);
+        background-color: var(--color-white);
+        width: 70%;
+        max-width: 600px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        padding: 0 25px;
+      }
+      #songs * {
+        box-shadow: none;
+      }
+      #songs hr {
+        margin: 0px;
+      }
+
+      .song input {
+        background: none;
+      }
+      @media (min-width: 500px) {
+        .song {
+          display: flex;
+        }
+        .song input {
+          width: 50%;
+        }
+      }
+      @media (max-width: 499px) {
+        .song {
+          display: flex;
+          flex-direction: column;
+        }
+        .song input {
+          width: calc(100% - 30px);
+        }
       }
 
       #error-message {
@@ -149,6 +188,10 @@
           />
         </div>
       </div>
+
+      <h2>Songs</h2>
+
+      <div id="songs" class="dynamic-content"></div>
 
       <div id="song-inputs" class="dynamic-content"></div>
 
@@ -253,6 +296,102 @@
             displayErrorScreen(err.message);
           });
       })();
+
+      // singleton for modifying the list of songs
+      const Songs = new (class {
+        constructor() {
+          this._rootElement = document.getElementById("songs");
+          this._rows = [];
+        }
+
+        _ensureRowIndexValid(rowIndex) {
+          if (rowIndex < 0 || rowIndex >= this._rows.length) {
+            throw new Error(
+              `Can't remove row ${rowIndex} (${this._rows.length} rows)`
+            );
+          }
+        }
+
+        rowCount() {
+          return this._rows.length;
+        }
+
+        addRow() {
+          const newRow = {
+            hr: null,
+            songDiv: null,
+            songNameInput: null,
+            artistInput: null,
+          };
+
+          if (this._rows.length) {
+            newRow.hr = document.createElement("hr");
+          }
+
+          newRow.songDiv = document.createElement("div");
+          newRow.songDiv.classList.add("song");
+
+          newRow.songNameInput = document.createElement("input");
+          newRow.songNameInput.classList.add("song-name-input");
+          newRow.songNameInput.type = "text";
+          newRow.songNameInput.placeholder = "Song Name";
+          newRow.songNameInput.maxlength = 255;
+
+          newRow.artistInput = document.createElement("input");
+          newRow.artistInput.classList.add("song-artist-input");
+          newRow.artistInput.type = "text";
+          newRow.artistInput.placeholder = "Artist(s)";
+          newRow.artistInput.maxlength = 255;
+
+          this._rows.push(newRow);
+
+          if (newRow.hr) {
+            this._rootElement.appendChild(newRow.hr);
+          }
+          console.log(`a`);
+          newRow.songDiv.appendChild(newRow.songNameInput);
+          console.log(`b`);
+          newRow.songDiv.appendChild(newRow.artistInput);
+          console.log(`c`);
+          this._rootElement.appendChild(newRow.songDiv);
+          console.log(`d`);
+        }
+
+        removeRow(rowIndex) {
+          this._ensureRowIndexValid(rowIndex);
+
+          const row = this._rows.splice(rowIndex, 1)[0];
+
+          if (rowIndex === 0) {
+            if (this._rows.length > 0) {
+              this._rows[0].hr.remove();
+            }
+          } else {
+            row.hr?.remove();
+          }
+
+          row.songDiv.remove();
+        }
+
+        rowIsEmpty(rowIndex) {
+          ensureRowIndexValid(rowIndex);
+          const row = this._rows[rowIndex];
+          return row.songNameInput.value === "" && row.artistInput.value === "";
+        }
+
+        rowName(rowIndex) {
+          ensureRowIndexValid(rowIndex);
+          return this._rows[rowIndex].songNameInput.value;
+        }
+
+        rowArtist(rowIndex) {
+          ensureRowIndexValid(rowIndex);
+          return this._rows[rowIndex].artistInput.value;
+        }
+      })();
+
+      // start with 1 empty row
+      Songs.addRow();
     </script>
   </body>
 </html>
