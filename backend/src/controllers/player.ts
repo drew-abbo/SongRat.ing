@@ -86,11 +86,13 @@ export async function playerReviewGame(req: Request, res: Response) {
     min_songs_per_playlist: number;
     max_songs_per_playlist: number;
     require_playlist_link: boolean;
+    player_name: string;
     players: Players;
     songs: Songs;
     ratings: Ratings;
   };
   type Players = Array<{
+    player_code?: string;
     player_name: string;
     playlist_link: string | null;
   }>;
@@ -133,6 +135,7 @@ export async function playerReviewGame(req: Request, res: Response) {
       // players in the game
       db.query(
         `SELECT 
+          p2.player_code,
           p2.player_name,
           p2.playlist_link
         FROM players AS p1
@@ -183,6 +186,23 @@ export async function playerReviewGame(req: Request, res: Response) {
       return unknownPlayerCode(res);
     }
 
+    // find this player's player name
+    let playerName: string | undefined;
+    for (let i = 0; i < players.length; i++) {
+      if (players[i].player_code === req.params.player_code) {
+        playerName = players[i].player_name;
+      }
+    }
+    if (!playerName) {
+      throw new Error("player code not found in player list");
+    }
+
+    // remove player codes from "players" list
+    players.forEach((player) => {
+      delete player.player_code;
+    });
+
+    gameInfo.player_name = playerName;
     gameInfo.players = players;
     gameInfo.songs = songs;
     gameInfo.ratings = ratings;
@@ -459,9 +479,7 @@ export async function playerRateSong(req: Request, res: Response) {
     );
 
     await client.query("COMMIT");
-    return res
-      .status(201)
-      .json({ message: "Rating submitted successfully" });
+    return res.status(201).json({ message: "Rating submitted successfully" });
   } catch (err) {
     await client.query("ROLLBACK");
     return basic500(res, err);

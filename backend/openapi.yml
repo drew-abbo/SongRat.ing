@@ -542,6 +542,11 @@ paths:
                   require_playlist_link:
                     description: Whether players are required to provide a playlist link.
                     type: boolean
+                  player_name:
+                    description: The name of this player.
+                    type: string
+                    minLength: 1
+                    maxLength: 255
                   players:
                     description: The players in this game ordered by player id.
                     type: array
