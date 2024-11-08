@@ -58,7 +58,7 @@ let gameData;
 
       // game name
       const gameNameElement = document.createElement("h2");
-      gameNameElement.innerText = resJson.game_name;
+      gameNameElement.innerText = gameName;
 
       // songs per playlist
       const songsPerPlaylistElement = document.createElement("h4");
