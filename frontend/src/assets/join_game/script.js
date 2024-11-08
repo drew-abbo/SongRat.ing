@@ -348,10 +348,14 @@ document.getElementById("join-button").addEventListener("click", () => {
         setErrorMessage(
           "The provided player name is already taken for this game."
         );
+        enableJoinButton();
         return;
       }
 
-      alert(JSON.stringify(resJson));
+      // save last used player code so it autofills on the home page next time
+      localStorage.setItem("lastUsedCode", code);
+
+      window.location.href = `/player?player_code=${resJson.player_code}`;
     })
     .catch((err) => {
       setErrorMessage(err.message);
