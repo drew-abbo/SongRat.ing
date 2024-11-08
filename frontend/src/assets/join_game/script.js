@@ -43,47 +43,15 @@ let gameData;
   // request server data with validated invite code
   sendRequest("GET", `/api/game/peek/${inviteCode}`, undefined, [404])
     .then(([status, resJson]) => {
-      const gameInfoDiv = document.getElementById("game-info");
-
       if (status === 404) {
         displayErrorScreen("The invite code is invalid or expired.");
         return;
       }
 
-      const gameName = resJson.gameName;
-      const minSongs = resJson.min_songs_per_playlist;
-      const maxSongs = resJson.max_songs_per_playlist;
-      const gameDescription = resJson.game_description;
-      const playlistLinkIsRequired = resJson.require_playlist_link;
-
-      // game name
-      const gameNameElement = document.createElement("h2");
-      gameNameElement.innerText = gameName;
-
-      // songs per playlist
-      const songsPerPlaylistElement = document.createElement("h4");
-      songsPerPlaylistElement.innerText =
-        (minSongs === maxSongs ? minSongs : `${minSongs}-${maxSongs}`) +
-        " song" +
-        (minSongs === 1 && maxSongs === 1 ? "" : "s") +
-        " per playlist";
-
-      const gameInfoElements = [gameNameElement, songsPerPlaylistElement];
-
-      // game description and a horizontal rule (if provided)
-      if (gameDescription) {
-        const gameDescriptionElement = document.createElement("pre");
-        gameDescriptionElement.innerText = gameDescription;
-        gameInfoElements.push(
-          document.createElement("hr"),
-          gameDescriptionElement
-        );
-      }
-
-      gameInfoDiv.replaceChildren(...gameInfoElements);
+      components.game_info(document.getElementById("game-info"), resJson);
 
       // display whether the playlist link field is required
-      if (playlistLinkIsRequired) {
+      if (resJson.require_playlist_link) {
         document.getElementById("playlist-link").required = true;
         document
           .querySelector('label[for="playlist-link"]')
@@ -91,7 +59,6 @@ let gameData;
       }
 
       gameData = resJson;
-
       makeDynamicElementsVisible();
     })
     .catch((err) => {

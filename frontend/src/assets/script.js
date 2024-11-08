@@ -12,6 +12,40 @@ const components = Object.freeze({
       </div>`
     );
   },
+
+  // a card with info about a game, sourced from `gameInfo` json data
+  game_info: (rootElement, gameInfo) => {
+    const gameName = gameInfo.game_name;
+    const minSongs = gameInfo.min_songs_per_playlist;
+    const maxSongs = gameInfo.max_songs_per_playlist;
+    const gameDescription = gameInfo.game_description;
+
+    // game name
+    const gameNameElement = document.createElement("h2");
+    gameNameElement.innerText = gameName;
+
+    // songs per playlist
+    const songsPerPlaylistElement = document.createElement("h4");
+    songsPerPlaylistElement.innerText =
+      (minSongs === maxSongs ? minSongs : `${minSongs}-${maxSongs}`) +
+      " song" +
+      (minSongs === 1 && maxSongs === 1 ? "" : "s") +
+      " per playlist";
+
+    const gameInfoElements = [gameNameElement, songsPerPlaylistElement];
+
+    // game description and a horizontal rule (if provided)
+    if (gameDescription) {
+      const gameDescriptionElement = document.createElement("pre");
+      gameDescriptionElement.innerText = gameDescription;
+      gameInfoElements.push(
+        document.createElement("hr"),
+        gameDescriptionElement
+      );
+    }
+
+    rootElement.replaceChildren(...gameInfoElements);
+  },
 });
 
 /**

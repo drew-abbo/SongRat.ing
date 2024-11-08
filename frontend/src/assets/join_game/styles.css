@@ -18,26 +18,6 @@
   visibility: hidden; /* start invisible */
 }
 
-#game-info {
-  margin: 10px;
-  padding: 0 25px;
-  border-radius: 25px;
-  border: 5px solid var(--accent-color-3);
-  background-color: var(--color-white);
-  color: var(--color-black);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  width: 70%;
-  max-width: 600px;
-}
-#game-info * {
-  text-shadow: none;
-}
-#game-info pre {
-  white-space: pre-wrap;
-  text-align: left;
-  font-family: var(--site-font);
-}
-
 .content h1,
 h2,
 p {
