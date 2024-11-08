@@ -525,11 +525,6 @@
           songCounterElement.innerText =
             `${numSongs} / ${minSongs}` +
             (minSongs === maxSongs ? "" : `-${maxSongs}`);
-
-          songCounterElement.style.color = songCounterElement.style.color =
-            numSongs >= minSongs && numSongs <= maxSongs
-              ? "var(--color-white)"
-              : "var(--color-error)";
         }
       );
 
