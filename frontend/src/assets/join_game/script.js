@@ -1,0 +1,393 @@
+function makeDynamicElementsVisible() {
+  document.getElementById("loading-msg").remove();
+  document.querySelectorAll(".dynamic-content").forEach((element) => {
+    element.style.visibility = "visible";
+  });
+}
+
+function displayErrorScreen(msg) {
+  document.getElementById("loading-msg").remove();
+
+  const headerElement = document.getElementById("header");
+  const errorMessageElement = document.getElementById("error-message");
+
+  document.querySelectorAll(".dynamic-content").forEach((element) => {
+    if (element !== headerElement && element !== errorMessageElement) {
+      element.remove();
+    }
+  });
+
+  headerElement.style.visibility = "visible";
+
+  errorMessageElement.innerText = msg;
+  errorMessageElement.style.visibility = "visible";
+}
+
+const inviteCode = new URLSearchParams(window.location.search).get(
+  "invite_code"
+);
+
+// generate the dynamic content from the invite_code parameter in the url
+let gameData;
+(() => {
+  // validate invite code
+  if (!inviteCode) {
+    displayErrorScreen("No invite code provided.");
+    return;
+  }
+  if (!/^I[a-zA-Z0-9]{15}$/.test(inviteCode)) {
+    displayErrorScreen("The invite code has an invalid format.");
+    return;
+  }
+
+  // request server data with validated invite code
+  sendRequest("GET", `/api/game/peek/${inviteCode}`, undefined, [404])
+    .then(([status, resJson]) => {
+      const gameInfoDiv = document.getElementById("game-info");
+
+      if (status === 404) {
+        displayErrorScreen("The invite code is invalid or expired.");
+        return;
+      }
+
+      const gameName = resJson.gameName;
+      const minSongs = resJson.min_songs_per_playlist;
+      const maxSongs = resJson.max_songs_per_playlist;
+      const gameDescription = resJson.game_description;
+      const playlistLinkIsRequired = resJson.require_playlist_link;
+
+      // game name
+      const gameNameElement = document.createElement("h2");
+      gameNameElement.innerText = resJson.game_name;
+
+      // songs per playlist
+      const songsPerPlaylistElement = document.createElement("h4");
+      songsPerPlaylistElement.innerText =
+        (minSongs === maxSongs ? minSongs : `${minSongs}-${maxSongs}`) +
+        " song" +
+        (minSongs === 1 && maxSongs === 1 ? "" : "s") +
+        " per playlist";
+
+      const gameInfoElements = [gameNameElement, songsPerPlaylistElement];
+
+      // game description and a horizontal rule (if provided)
+      if (gameDescription) {
+        const gameDescriptionElement = document.createElement("pre");
+        gameDescriptionElement.innerText = gameDescription;
+        gameInfoElements.push(
+          document.createElement("hr"),
+          gameDescriptionElement
+        );
+      }
+
+      gameInfoDiv.replaceChildren(...gameInfoElements);
+
+      // display whether the playlist link field is required
+      if (playlistLinkIsRequired) {
+        document.getElementById("playlist-link").required = true;
+        document
+          .querySelector('label[for="playlist-link"]')
+          ?.classList.add("required-label");
+      }
+
+      gameData = resJson;
+
+      makeDynamicElementsVisible();
+    })
+    .catch((err) => {
+      displayErrorScreen(err.message);
+    });
+})();
+
+// class for modifying a list of songs
+class Songs {
+  /**
+   * @param onChangeFunc A function that is called any time there's any
+   * modification to a row. The function is passed the event and `this`
+   * (the source `Songs` object).
+   * @param onBlurFunc A function that is called any time a row is fully
+   * unfocused. The function is passed the event and `this` (the source
+   * `Songs` object).
+   */
+  constructor(onChangeFunc = () => {}, onBlurFunc = () => {}) {
+    this._rootElement = document.getElementById("songs");
+    this._rows = [];
+    this._onChangeFunc = onChangeFunc;
+    this._onBlurFunc = onBlurFunc;
+  }
+
+  _ensureRowIndexValid(rowIndex) {
+    if (rowIndex < 0 || rowIndex >= this._rows.length) {
+      throw new Error(
+        `Can't remove row ${rowIndex} (${this._rows.length} rows)`
+      );
+    }
+  }
+
+  rowCount() {
+    return this._rows.length;
+  }
+
+  addRow() {
+    const newRow = {
+      hr: null,
+      songDiv: null,
+      songNameInput: null,
+      artistInput: null,
+    };
+
+    if (this._rows.length) {
+      newRow.hr = document.createElement("hr");
+    }
+
+    newRow.songDiv = document.createElement("div");
+    newRow.songDiv.classList.add("song");
+
+    newRow.songNameInput = document.createElement("input");
+    newRow.songNameInput.classList.add("song-name-input");
+    newRow.songNameInput.type = "text";
+    newRow.songNameInput.placeholder = "Song Name";
+    newRow.songNameInput.maxlength = 255;
+
+    newRow.artistInput = document.createElement("input");
+    newRow.artistInput.classList.add("song-artist-input");
+    newRow.artistInput.type = "text";
+    newRow.artistInput.placeholder = "Artist(s)";
+    newRow.artistInput.maxlength = 255;
+
+    this._rows.push(newRow);
+
+    if (newRow.hr) {
+      this._rootElement.appendChild(newRow.hr);
+    }
+    newRow.songDiv.appendChild(newRow.songNameInput);
+    newRow.songDiv.appendChild(newRow.artistInput);
+    this._rootElement.appendChild(newRow.songDiv);
+
+    // the enter key goes to the next input field
+    newRow.songNameInput.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      newRow.artistInput.focus();
+    });
+    newRow.artistInput.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      this._rows[
+        this.rowIndexFromInputElement(newRow.artistInput) + 1
+      ]?.songNameInput.focus();
+    });
+
+    // user defined onChangeFunc is called on change
+    const onChangeFunc = (event) => {
+      this._onChangeFunc(event, this);
+    };
+    newRow.songNameInput.addEventListener("input", onChangeFunc);
+    newRow.artistInput.addEventListener("input", onChangeFunc);
+
+    // user defined onBlurFunc is called when an input blurs and the other
+    // isn't focused
+    newRow.songNameInput.addEventListener("blur", (event) => {
+      if (event.relatedTarget !== newRow.artistInput) {
+        this._onBlurFunc(event, this);
+      }
+    });
+    newRow.artistInput.addEventListener("blur", (event) => {
+      if (event.relatedTarget !== newRow.songNameInput) {
+        this._onBlurFunc(event, this);
+      }
+    });
+  }
+
+  removeRow(rowIndex) {
+    this._ensureRowIndexValid(rowIndex);
+
+    const row = this._rows.splice(rowIndex, 1)[0];
+
+    // when removing the 1st row, remove the next row's hr
+    if (rowIndex === 0 && this._rows.length > 0) {
+      this._rows[0].hr.remove();
+    }
+
+    row.hr?.remove();
+    row.songDiv.remove();
+  }
+
+  rowIsEmpty(rowIndex) {
+    this._ensureRowIndexValid(rowIndex);
+    const row = this._rows[rowIndex];
+    return !(row.songNameInput.value.trim() || row.artistInput.value.trim());
+  }
+
+  rowIsFull(rowIndex) {
+    this._ensureRowIndexValid(rowIndex);
+    const row = this._rows[rowIndex];
+    return !!(row.songNameInput.value.trim() && row.artistInput.value.trim());
+  }
+
+  emptyRowCount() {
+    let ret = 0;
+    for (let i = 0; i < this._rows.length; i++) {
+      const row = this._rows[i];
+      if (!(row.songNameInput.value.trim() || row.artistInput.value.trim())) {
+        ret++;
+      }
+    }
+    return ret;
+  }
+
+  fullRowCount() {
+    let ret = 0;
+    for (let i = 0; i < this._rows.length; i++) {
+      const row = this._rows[i];
+      if (row.songNameInput.value.trim() && row.artistInput.value.trim()) {
+        ret++;
+      }
+    }
+    return ret;
+  }
+
+  rowName(rowIndex) {
+    this._ensureRowIndexValid(rowIndex);
+    return this._rows[rowIndex].songNameInput.value;
+  }
+
+  rowArtist(rowIndex) {
+    this._ensureRowIndexValid(rowIndex);
+    return this._rows[rowIndex].artistInput.value;
+  }
+
+  rowIndexFromInputElement(rowInputElement) {
+    for (let i = 0; i < this._rows.length; i++) {
+      if (
+        rowInputElement === this._rows[i].songNameInput ||
+        rowInputElement === this._rows[i].artistInput
+      ) {
+        return i;
+      }
+    }
+    return -1;
+  }
+}
+
+const songs = new Songs(
+  // if we're typing in the last row, add a new row, unless we clear out
+  // the 2nd to last row, then we should be the last row
+  (event, songs) => {
+    const rowIndex = songs.rowIndexFromInputElement(event.target);
+    if (rowIndex + 1 === songs.rowCount() && !songs.rowIsEmpty(rowIndex)) {
+      songs.addRow();
+    } else if (
+      rowIndex + 2 === songs.rowCount() &&
+      songs.rowIsEmpty(rowIndex)
+    ) {
+      songs.removeRow(rowIndex + 1);
+    }
+  },
+
+  // if we leave focus of a row and the row is empty (and not the last
+  // row) we should remove the row (also update the song counter)
+  (event, songs) => {
+    const rowIndex = songs.rowIndexFromInputElement(event.target);
+    if (rowIndex + 1 !== songs.rowCount() && songs.rowIsEmpty(rowIndex)) {
+      songs.removeRow(rowIndex);
+    }
+
+    const songCounterElement = document.getElementById("song-counter");
+    const numSongs = songs.rowCount() - 1;
+
+    if (numSongs === 0) {
+      songCounterElement.innerText = "";
+      return;
+    }
+
+    const minSongs = gameData.min_songs_per_playlist;
+    const maxSongs = gameData.max_songs_per_playlist;
+
+    songCounterElement.innerText =
+      `${numSongs} / ${minSongs}` +
+      (minSongs === maxSongs ? "" : `-${maxSongs}`);
+  }
+);
+
+// start with 1 empty row
+songs.addRow();
+
+function disableJoinButton() {
+  document.getElementById("join-button").disabled = true;
+}
+function enableJoinButton(cooldownMs = 500) {
+  setTimeout(() => {
+    document.getElementById("join-button").disabled = false;
+  }, cooldownMs);
+}
+
+function setErrorMessage(reason) {
+  document.getElementById("error-message").innerText = reason;
+}
+
+document.getElementById("join-button").addEventListener("click", () => {
+  const playerName = document.getElementById("player-name").value.trim();
+  if (!playerName) {
+    setErrorMessage("Please set a player name.");
+    return;
+  }
+
+  const playlistLink = document.getElementById("playlist-link").value.trim();
+  if (!playlistLink && gameData.require_playlist_link) {
+    setErrorMessage("Please set a playlist link.");
+    return;
+  }
+
+  const numSongs = songs.fullRowCount();
+  if (numSongs !== songs.rowCount() - 1) {
+    setErrorMessage("1 or more songs are missing information.");
+    return;
+  }
+  if (numSongs < gameData.min_songs_per_playlist) {
+    setErrorMessage("Too few songs provided.");
+    return;
+  }
+  if (numSongs > gameData.max_songs_per_playlist) {
+    setErrorMessage("Too many songs provided.");
+    return;
+  }
+
+  const songList = [];
+  for (let i = 0; i < songs.rowCount() - 1; i++) {
+    songList.push({
+      title: songs.rowName(i),
+      artist: songs.rowArtist(i),
+    });
+  }
+  // handle the unlikely event that the song list length changed since
+  // we last checked
+  if (songList.length !== numSongs) {
+    throw new Error("Unexpected number of songs retrieved.");
+  }
+
+  setErrorMessage("");
+  disableJoinButton();
+
+  const requestJson = {
+    player_name: playerName,
+    playlist_link: playlistLink || null,
+    songs: songList,
+  };
+
+  sendRequest("POST", `/api/game/join/${inviteCode}`, requestJson, [409])
+    .then(([status, resJson]) => {
+      // if we get a 409 it almost definitely means the player name is
+      // already taken (since we already validated everything else)
+      if (status === 409) {
+        setErrorMessage(
+          "The provided player name is already taken for this game."
+        );
+        return;
+      }
+
+      alert(JSON.stringify(resJson));
+    })
+    .catch((err) => {
+      setErrorMessage(err.message);
+      enableJoinButton();
+    });
+});

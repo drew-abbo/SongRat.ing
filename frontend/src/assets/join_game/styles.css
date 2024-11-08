@@ -1,0 +1,147 @@
+.content {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+#header {
+  margin-bottom: 20px;
+}
+
+.dynamic-content {
+  visibility: hidden; /* start invisible */
+}
+
+#game-info {
+  margin: 10px;
+  padding: 0 25px;
+  border-radius: 25px;
+  border: 5px solid var(--accent-color-3);
+  background-color: var(--color-white);
+  color: var(--color-black);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  width: 70%;
+  max-width: 600px;
+}
+#game-info * {
+  text-shadow: none;
+}
+#game-info pre {
+  white-space: pre-wrap;
+  text-align: left;
+  font-family: var(--site-font);
+}
+
+.content h1,
+h2,
+p {
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+}
+
+.content input {
+  border-radius: 8px;
+  padding: 15px;
+  outline: none;
+  border: none;
+  background-color: var(--color-white);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.content hr {
+  border: 1px solid var(--accent-color-2);
+}
+
+@media (min-width: 500px) {
+  #player-info {
+    display: flex;
+  }
+}
+.player-info-element {
+  margin: 0 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.content label {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  font-size: 20px;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+}
+.required-label::after {
+  content: " *";
+  color: var(--color-error);
+  font-weight: bold;
+}
+
+#songs {
+  border-radius: 25px;
+  padding: 1px;
+  border: 5px solid var(--accent-color-3);
+  background-color: var(--color-white);
+  width: 70%;
+  max-width: 600px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  padding: 0 25px;
+}
+#songs * {
+  box-shadow: none;
+}
+#songs hr {
+  margin: 0px;
+}
+
+.song input {
+  background: none;
+}
+@media (min-width: 500px) {
+  .song {
+    display: flex;
+  }
+  .song input {
+    width: 50%;
+    text-align: left;
+  }
+}
+@media (max-width: 499px) {
+  .song {
+    display: flex;
+    flex-direction: column;
+  }
+  .song input {
+    width: calc(100% - 30px);
+  }
+}
+#song-counter {
+  min-height: 20px;
+}
+
+#error-message {
+  color: var(--color-error);
+  margin: 0 20px;
+  margin-bottom: 10px;
+  min-height: 40px;
+}
+
+#join-button {
+  border-radius: 8px;
+  margin-bottom: 75px;
+  padding: 15px;
+  font-size: 18px;
+  outline: none;
+  border: none;
+  text-align: center;
+  font-weight: bold;
+  background-color: var(--accent-color-3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+#join-button:hover {
+  background-color: var(--accent-color-2);
+}
