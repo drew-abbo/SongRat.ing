@@ -55,13 +55,18 @@ async function enterCodeSubmit() {
 
   setInvalidCodeReason("");
 
-  if (code[0] === "I") {
-    window.location.href = `/join_game?invite_code=${code}`;
-    return;
+  // save last used player/admin code so it autofills next time
+  if (code[0] !== "I") {
+    localStorage.setItem("lastUsedCode", code);
   }
 
-  alert((code[0] === "P" ? "Player" : "Admin") + " code entered...");
-  localStorage.setItem("lastUsedCode", code);
+  if (code[0] === "I") {
+    window.location.href = `/join_game?invite_code=${code}`;
+  } else if (code[0] === "P") {
+    window.location.href = `/player?player_code=${code}`;
+  } else {
+    alert("Admin code entered...");
+  }
 }
 
 // "Enter" on "enter-code-input" is the same as pressing "Go"
