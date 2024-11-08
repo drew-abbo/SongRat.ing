@@ -299,11 +299,21 @@
           });
       })();
 
-      // singleton for modifying the list of songs
-      const Songs = new (class {
-        constructor() {
+      // class for modifying a list of songs
+      class Songs {
+        /**
+         * @param onChangeFunc A function that is called any time there's any
+         * modification to a row. The function is passed the event and `this`
+         * (the source `Songs` object).
+         * @param onBlurFunc A function that is called any time a row is fully
+         * unfocused. The function is passed the event and `this` (the source
+         * `Songs` object).
+         */
+        constructor(onChangeFunc = () => {}, onBlurFunc = () => {}) {
           this._rootElement = document.getElementById("songs");
           this._rows = [];
+          this._onChangeFunc = onChangeFunc;
+          this._onBlurFunc = onBlurFunc;
         }
 
         _ensureRowIndexValid(rowIndex) {
@@ -350,13 +360,41 @@
           if (newRow.hr) {
             this._rootElement.appendChild(newRow.hr);
           }
-          console.log(`a`);
           newRow.songDiv.appendChild(newRow.songNameInput);
-          console.log(`b`);
           newRow.songDiv.appendChild(newRow.artistInput);
-          console.log(`c`);
           this._rootElement.appendChild(newRow.songDiv);
-          console.log(`d`);
+
+          // the enter key goes to the next input field
+          newRow.songNameInput.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter") return;
+            newRow.artistInput.focus();
+          });
+          newRow.artistInput.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter") return;
+            this._rows[
+              this.rowIndexFromInputElement(newRow.artistInput) + 1
+            ]?.songNameInput.focus();
+          });
+
+          // user defined onChangeFunc is called on change
+          const onChangeFunc = (event) => {
+            this._onChangeFunc(event, this);
+          };
+          newRow.songNameInput.addEventListener("input", onChangeFunc);
+          newRow.artistInput.addEventListener("input", onChangeFunc);
+
+          // user defined onBlurFunc is called when an input blurs and the other
+          // isn't focused
+          newRow.songNameInput.addEventListener("blur", (event) => {
+            if (event.relatedTarget !== newRow.artistInput) {
+              this._onBlurFunc(event, this);
+            }
+          });
+          newRow.artistInput.addEventListener("blur", (event) => {
+            if (event.relatedTarget !== newRow.songNameInput) {
+              this._onBlurFunc(event, this);
+            }
+          });
         }
 
         removeRow(rowIndex) {
@@ -364,36 +402,74 @@
 
           const row = this._rows.splice(rowIndex, 1)[0];
 
-          if (rowIndex === 0) {
-            if (this._rows.length > 0) {
-              this._rows[0].hr.remove();
-            }
-          } else {
-            row.hr?.remove();
+          // when removing the 1st row, remove the next row's hr
+          if (rowIndex === 0 && this._rows.length > 0) {
+            this._rows[0].hr.remove();
           }
 
+          row.hr?.remove();
           row.songDiv.remove();
         }
 
         rowIsEmpty(rowIndex) {
-          ensureRowIndexValid(rowIndex);
+          this._ensureRowIndexValid(rowIndex);
           const row = this._rows[rowIndex];
           return row.songNameInput.value === "" && row.artistInput.value === "";
         }
 
         rowName(rowIndex) {
-          ensureRowIndexValid(rowIndex);
+          this._ensureRowIndexValid(rowIndex);
           return this._rows[rowIndex].songNameInput.value;
         }
 
         rowArtist(rowIndex) {
-          ensureRowIndexValid(rowIndex);
+          this._ensureRowIndexValid(rowIndex);
           return this._rows[rowIndex].artistInput.value;
         }
-      })();
+
+        rowIndexFromInputElement(rowInputElement) {
+          for (let i = 0; i < this._rows.length; i++) {
+            if (
+              rowInputElement === this._rows[i].songNameInput ||
+              rowInputElement === this._rows[i].artistInput
+            ) {
+              return i;
+            }
+          }
+          return -1;
+        }
+      }
+
+      const songs = new Songs(
+        // if we're typing in the last row, add a new row, unless we clear out
+        // the 2nd to last row, then we should be the last row
+        (event, songs) => {
+          const rowIndex = songs.rowIndexFromInputElement(event.target);
+          if (
+            rowIndex + 1 === songs.rowCount() &&
+            !songs.rowIsEmpty(rowIndex)
+          ) {
+            songs.addRow();
+          } else if (
+            rowIndex + 2 === songs.rowCount() &&
+            songs.rowIsEmpty(rowIndex)
+          ) {
+            songs.removeRow(rowIndex + 1);
+          }
+        },
+
+        // if we leave focus of a row and the row is empty (and not the last
+        // row) we should remove the row
+        (event, songs) => {
+          const rowIndex = songs.rowIndexFromInputElement(event.target);
+          if (rowIndex + 1 !== songs.rowCount() && songs.rowIsEmpty(rowIndex)) {
+            songs.removeRow(rowIndex);
+          }
+        }
+      );
 
       // start with 1 empty row
-      Songs.addRow();
+      songs.addRow();
     </script>
   </body>
 </html>
