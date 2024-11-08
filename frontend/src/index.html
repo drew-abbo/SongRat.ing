@@ -118,13 +118,11 @@
 
     <script>
       // fill the invite code with the last used player/admin code
-      const lastUsedCode = localStorage.getItem("lastUsedCode");
-      if (lastUsedCode) {
-        document.getElementById("enter-code-input").value = lastUsedCode;
-      }
+      document.getElementById("enter-code-input").value =
+        localStorage.getItem("lastUsedCode") || "";
 
       function setInvalidCodeReason(reason) {
-        document.getElementById("invalid-code-reason").innerHTML = reason;
+        document.getElementById("invalid-code-reason").innerText = reason;
       }
 
       function disableCodeSubmitButton() {
