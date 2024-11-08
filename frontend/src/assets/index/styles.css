@@ -42,6 +42,13 @@ p {
 .enter-code input {
   background-color: var(--color-white);
   color: var(--color-black);
+  font-size: 17px;
+  max-height: 17px;
+  max-width: 200px;
+}
+.enter-code input:not(:placeholder-shown) {
+  font-size: 18px;
+  font-family: var(--site-font-mono);
 }
 .enter-code button {
   text-align: center;
@@ -53,7 +60,7 @@ p {
 }
 @media (max-width: 440px) {
   .enter-code input {
-    width: 90%;
+    width: 200px;
     text-align: center;
   }
   .enter-code button {
