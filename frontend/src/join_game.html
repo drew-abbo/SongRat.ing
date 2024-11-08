@@ -231,13 +231,13 @@
         errorMessageElement.style.visibility = "visible";
       }
 
+      const inviteCode = new URLSearchParams(window.location.search).get(
+        "invite_code"
+      );
+
       // generate the dynamic content from the invite_code parameter in the url
       let gameData;
       (() => {
-        const inviteCode = new URLSearchParams(window.location.search).get(
-          "invite_code"
-        );
-
         // validate invite code
         if (!inviteCode) {
           displayErrorScreen("No invite code provided.");
@@ -438,7 +438,7 @@
         emptyRowCount() {
           let ret = 0;
           for (let i = 0; i < this._rows.length; i++) {
-            const row = this._rows[rowIndex];
+            const row = this._rows[i];
             if (
               !(row.songNameInput.value.trim() || row.artistInput.value.trim())
             ) {
@@ -451,7 +451,7 @@
         fullRowCount() {
           let ret = 0;
           for (let i = 0; i < this._rows.length; i++) {
-            const row = this._rows[rowIndex];
+            const row = this._rows[i];
             if (
               row.songNameInput.value.trim() &&
               row.artistInput.value.trim()
@@ -535,6 +535,89 @@
 
       // start with 1 empty row
       songs.addRow();
+
+      function disableJoinButton() {
+        document.getElementById("join-button").disabled = true;
+      }
+      function enableJoinButton(cooldownMs = 500) {
+        setTimeout(() => {
+          document.getElementById("join-button").disabled = false;
+        }, cooldownMs);
+      }
+
+      function setErrorMessage(reason) {
+        document.getElementById("error-message").innerText = reason;
+      }
+
+      document.getElementById("join-button").addEventListener("click", () => {
+        const playerName = document.getElementById("player-name").value.trim();
+        if (!playerName) {
+          setErrorMessage("Please set a player name.");
+          return;
+        }
+
+        const playlistLink = document
+          .getElementById("playlist-link")
+          .value.trim();
+        if (!playlistLink && gameData.require_playlist_link) {
+          setErrorMessage("Please set a playlist link.");
+          return;
+        }
+
+        const numSongs = songs.fullRowCount();
+        if (numSongs !== songs.rowCount() - 1) {
+          setErrorMessage("1 or more songs are missing information.");
+          return;
+        }
+        if (numSongs < gameData.min_songs_per_playlist) {
+          setErrorMessage("Too few songs provided.");
+          return;
+        }
+        if (numSongs > gameData.max_songs_per_playlist) {
+          setErrorMessage("Too many songs provided.");
+          return;
+        }
+
+        const songList = [];
+        for (let i = 0; i < songs.rowCount() - 1; i++) {
+          songList.push({
+            title: songs.rowName(i),
+            artist: songs.rowArtist(i),
+          });
+        }
+        // handle the unlikely event that the song list length changed since
+        // we last checked
+        if (songList.length !== numSongs) {
+          throw new Error("Unexpected number of songs retrieved.");
+        }
+
+        setErrorMessage("");
+        disableJoinButton();
+
+        const requestJson = {
+          player_name: playerName,
+          playlist_link: playlistLink || null,
+          songs: songList,
+        };
+
+        sendRequest("POST", `/api/game/join/${inviteCode}`, requestJson, [409])
+          .then(([status, resJson]) => {
+            // if we get a 409 it almost definitely means the player name is
+            // already taken (since we already validated everything else)
+            if (status === 409) {
+              setErrorMessage(
+                "The provided player name is already taken for this game."
+              );
+              return;
+            }
+
+            alert(JSON.stringify(resJson));
+          })
+          .catch((err) => {
+            setErrorMessage(err.message);
+            enableJoinButton();
+          });
+      });
     </script>
   </body>
 </html>
