@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Play Song Rating Game</title>
+
+    <link rel="stylesheet" href="assets/styles.css" />
+    <link rel="stylesheet" href="assets/player/styles.css" />
+    <script src="assets/script.js"></script>
+  </head>
+  <body>
+    <script>
+      components.top_nav_bar();
+    </script>
+
+    <div class="content">
+      <p id="loading-msg">loading...</p>
+
+      <h1 id="header" class="dynamic-content">Play Game</h1>
+
+      <div id="player-name-and-code" class="dynamic-content">
+        <h2 id="player-name"></h2>
+        <button id="player-code"></button>
+      </div>
+
+      <div id="game-info" class="dynamic-content"></div>
+
+      <p id="error-message" class="dynamic-content"></p>
+    </div>
+
+    <script src="assets/player/script.js"></script>
+  </body>
+</html>
