@@ -20,6 +20,8 @@
 
       <h1 id="header" class="dynamic-content">Play Game</h1>
 
+      <p id="error-message" class="dynamic-content"></p>
+
       <div id="player-name-and-code" class="dynamic-content">
         <h2 id="player-name"></h2>
         <button id="player-code"></button>
@@ -27,7 +29,38 @@
 
       <div id="game-info" class="dynamic-content"></div>
 
-      <p id="error-message" class="dynamic-content"></p>
+      <div id="playlists" class="dynamic-content">
+        <div class="playlist">
+          <div class="playlist-name">
+            <h3 class="playlist-name-text">Playlist Owner Name</h3>
+          </div>
+          <div class="playlist-content" id="playlist-content">
+            <div class="song-row">
+              <div class="song">
+                <h3 class="song-name">Song Title</h3>
+                <p class="song-artist">Artist</p>
+              </div>
+              <input class="rating-input" inputmode="numeric" />
+            </div>
+            <hr />
+            <div class="song-row">
+              <div class="song">
+                <h3 class="song-name">Song Title</h3>
+                <p class="song-artist">Artist</p>
+              </div>
+              <input class="rating-input" inputmode="numeric" />
+            </div>
+            <hr />
+            <div class="song-row">
+              <div class="song">
+                <h3 class="song-name">Song Title</h3>
+                <p class="song-artist">Artist</p>
+              </div>
+              <input class="rating-input" inputmode="numeric" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="assets/player/script.js"></script>

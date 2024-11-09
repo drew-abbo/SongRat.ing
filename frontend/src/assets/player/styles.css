@@ -14,6 +14,13 @@
   margin-bottom: 20px;
 }
 
+#error-message {
+  color: var(--color-error);
+  margin: 0 20px;
+  margin-bottom: 10px;
+  min-height: 40px;
+}
+
 .dynamic-content {
   visibility: hidden; /* start invisible */
 }
@@ -44,7 +51,7 @@ p {
   text-shadow: none;
 }
 #player-name {
-  margin: 0 10px;
+  margin: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -52,7 +59,7 @@ p {
 #player-code {
   background-color: var(--accent-color-3);
   border-radius: 10px;
-  margin: 0 10px;
+  margin: 0;
   padding: 10px;
   border: none;
   position: relative;
@@ -95,39 +102,92 @@ p {
   }
 }
 
-.content input {
-  border-radius: 8px;
-  padding: 15px;
-  outline: none;
-  border: none;
-  background-color: var(--color-white);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  text-align: center;
-}
-
 .content hr {
   border: 1px solid var(--accent-color-2);
 }
 
-#error-message {
-  color: var(--color-error);
-  margin: 0 20px;
-  margin-bottom: 10px;
-  min-height: 40px;
+#playlists {
+  margin-top: 10px;
+  margin-bottom: 50vh;
+  width: calc(70% + 60px);
+  max-width: 660px;
 }
 
-#join-button {
+.playlist {
+  padding: 0;
+  border-radius: 25px;
+  border: 5px solid var(--accent-color-3);
+  background-color: var(--accent-color-3);
+  color: var(--color-black);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+.playlist * {
+  text-shadow: none;
+  margin: 0;
+}
+
+.playlist-name {
+  background-color: var(--accent-color-3);
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  padding: 10px 0;
+}
+.playlist-name-text {
+  margin: 0 20px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.playlist-content {
+  background-color: var(--color-white);
+  max-height: 0; /* collapsed by default */
+  transition: max-height 0.35s ease-in-out, padding 0.35s ease-in-out;
+  padding: 0;
+  text-align: left;
+}
+.playlist-content.open {
+  padding: 10px 0;
+}
+.playlist-content hr {
+  margin: 0 25px;
+}
+
+.song-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 25px;
+}
+
+.song {
+  background-color: var(--color-white);
+  padding: 0;
+  flex-grow: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.song * {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rating-input {
   border-radius: 8px;
-  margin-bottom: 75px;
-  padding: 15px;
-  font-size: 18px;
+  margin-left: 10px;
   outline: none;
   border: none;
-  text-align: center;
-  font-weight: bold;
-  background-color: var(--accent-color-3);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-#join-button:hover {
-  background-color: var(--accent-color-2);
+  background-color: var(--color-white);
+  color: var(--color-black);
+  text-align: left;
+  width: 27px;
+  height: 34px;
+  padding: 0 10px;
+  background-color: red;
 }

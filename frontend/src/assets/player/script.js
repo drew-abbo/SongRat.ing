@@ -48,14 +48,19 @@ let gameData;
         return;
       }
 
-      console.log(resJson);
-
       // set player name and player code
       document.getElementById("player-name").innerText = resJson.player_name;
       document.getElementById("player-code").innerText = playerCode;
 
       components.game_info(document.getElementById("game-info"), resJson);
       gameData = resJson;
+
+      createPlaylistElements();
+
+      // remove error message text box since we're not going to call
+      // displayErrorScreen() from here
+      document.getElementById("error-message").remove();
+
       makeDynamicElementsVisible();
     })
     .catch((err) => {
@@ -77,3 +82,43 @@ document
         event.target.classList.remove("show-copied");
     }, 1500);
   });
+
+// handle playlists expanding when you click the playlist header
+document.querySelectorAll(".playlist-name").forEach((playlistName) => {
+  playlistName.addEventListener("click", () => {
+    const content = playlistName.nextElementSibling;
+    if (content.classList.contains("open")) {
+      content.style.maxHeight = null;
+      content.classList.remove("open");
+    } else {
+      content.style.maxHeight = `${content.scrollHeight}px`;
+      content.classList.add("open");
+    }
+  });
+});
+
+// REMOVE LATER: start with all playlists open
+document.querySelectorAll(".playlist-content").forEach((content) => {
+  content.style.maxHeight = `${content.scrollHeight}px`;
+  content.classList.add("open");
+});
+
+// rating textboxes change color and round when you deselect them
+document.querySelectorAll(".rating-input").forEach((input) => {
+  input.addEventListener("blur", () => {
+    // force value to be between 0-10 w/ a step size of .25
+    input.value = stringRepresentsFloat(input.value)
+      ? Math.round(Math.max(0, Math.min(parseFloat(input.value), 10)) * 4) / 4
+      : "";
+    input.style.backgroundColor = colorFromRatingStr(input.value);
+  });
+});
+
+function createPlaylistElements() {
+  // TODO: use `gameData` to create the playlist elements
+  // - when the game is "waiting_for_players" do not give rating inputs
+  // - when the game is "active" give rating inputs
+  // - when the game is "finished" give *disabled* rating inputs
+  // - never give rating inputs for the reviewer's playlist
+  // - add <hr> elements in between all songs
+}
