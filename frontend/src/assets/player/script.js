@@ -35,12 +35,13 @@ function updateRatingInput(ratingInput) {
 
 let playlists;
 function createPlaylistElements(gameData) {
-  // TODO:
-  // - when the game is "waiting_for_players" do not give rating inputs
-  // - when the game is "active" give rating inputs
-  // - when the game is "finished" give *disabled* rating inputs
-  // - never give rating inputs for the reviewer's playlist
-  // - enter key should move to the next input in the playlist
+  // create a map of all ratings for every song so we can easily look up ratings
+  // (this also helps the time complexity of rating lookups, though that doesn't
+  // matter that much here)
+  const ratingsBySongId = new Map();
+  gameData.ratings.forEach((rating) => {
+    ratingsBySongId.set(rating.song_id, rating);
+  });
 
   const playlistContainer = document.getElementById("playlists");
 
@@ -141,12 +142,28 @@ function createPlaylistElements(gameData) {
       ]),
     ]);
 
-    const ratingInput = newElement("input", ["rating-input"]);
-    updateRatingInput(ratingInput);
-    ratingInput.addEventListener("blur", (event) => {
-      updateRatingInput(event.target);
-    });
-    songRow.appendChild(ratingInput);
+    // conditionally add a rating input (and fill w/ any existing rating)
+    if (
+      gameData.game_status !== "waiting_for_players" &&
+      !currPlaylistIsOwnPlaylist
+    ) {
+      const ratingInput = newElement("input", ["rating-input"], {
+        value: ratingsBySongId.has(song.song_id)
+          ? ratingsBySongId.get(song.song_id)
+          : "",
+      });
+      updateRatingInput(ratingInput);
+      ratingInput.addEventListener("blur", (event) => {
+        updateRatingInput(event.target);
+      });
+
+      // ratings aren't allowed to be submitted for non-active games
+      if (gameData.game_status !== "active") {
+        ratingInput.disabled = true;
+      }
+
+      songRow.appendChild(ratingInput);
+    }
 
     currPlaylistContent.appendChild(songRow);
   });
