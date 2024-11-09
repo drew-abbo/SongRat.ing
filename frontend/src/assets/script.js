@@ -115,3 +115,56 @@ async function sendRequest(method, url, jsonBody, allowedBadCodes = []) {
 
   return [res.status, resJson];
 }
+
+function stringRepresentsFloat(s) {
+  return /^\s*(-?)((\d+(\.(\d+)?)?)|(\.?\d+))\s*$/.test(s);
+}
+
+/**
+ * Returns whether an input string represents a float in the range 0-10
+ * (inclusive). Whitespace is allowed on either side.
+ *
+ * @param {string} s A string that may or may not represent a rating.
+ * @returns {boolean} Whether or not the string represents a valid rating.
+ */
+function isValidRatingStr(s) {
+  if (!stringRepresentsFloat(s)) {
+    return false;
+  }
+  const num = parseFloat(s);
+  return num >= 0 && num <= 10;
+}
+
+/**
+ * Get a background color based on an input string that represents a number.
+ *
+ * @param {string} valueStr A string that may or may not represent a float.
+ * @returns {string} The CSS color string to be applied based on the value.
+ */
+function colorFromRatingStr(valueStr) {
+  const badColor = "#d6d6d6";
+  const red = { r: 255, g: 216, b: 214 };
+  const yellow = { r: 255, g: 241, b: 227 };
+  const green = { r: 227, g: 255, b: 227 };
+
+  if (!isValidRatingStr(valueStr)) {
+    return badColor;
+  }
+  const val = parseFloat(valueStr);
+
+  // get color inbetween 2 colors given a ratio
+  function lerpColor(colorA, colorB, ratio) {
+    return {
+      r: Math.round(colorA.r + (colorB.r - colorA.r) * ratio),
+      g: Math.round(colorA.g + (colorB.g - colorA.g) * ratio),
+      b: Math.round(colorA.b + (colorB.b - colorA.b) * ratio),
+    };
+  }
+
+  const ret = lerpColor(
+    lerpColor(red, yellow, val / 10),
+    lerpColor(yellow, green, val / 10),
+    val / 10
+  );
+  return `rgb(${ret.r}, ${ret.g}, ${ret.b})`;
+}
