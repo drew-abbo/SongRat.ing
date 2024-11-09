@@ -140,6 +140,7 @@ p {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  color: var(--color-black);
 }
 
 .playlist-content {
@@ -154,6 +155,24 @@ p {
 }
 .playlist-content hr {
   margin: 0 25px;
+}
+
+.playlist-link-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.playlist-link {
+  background-color: var(--accent-color-3);
+  padding: 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--color-black);
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+.playlist-link:hover {
+  background-color: var(--accent-color-2);
 }
 
 .song-row {
