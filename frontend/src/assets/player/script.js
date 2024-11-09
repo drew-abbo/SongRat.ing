@@ -23,14 +23,68 @@ function displayErrorScreen(msg) {
   errorMessageElement.style.visibility = "visible";
 }
 
-// updates a rating input based on it's value (rounds value, sets bg color)
-function updateRatingInput(ratingInput) {
+const playerCode = new URLSearchParams(window.location.search).get(
+  "player_code"
+);
+
+/**
+ * Updates the background color for a rating and optionally rounds and submits
+ * the rating to the backend.
+ *
+ * @param {HTMLInputElement} ratingInput The input element.
+ * @param {Map<number, number>} ratingsBySongId A map of all ratings for songs
+ *  that have ratings.
+ * @param {number} songId
+ * @param {boolean} [justUpdateColor=false] Whether to just change the input
+ *  background color (values not rounded, nothing submitted to backend).
+ */
+function updateRatingInput(
+  ratingInput,
+  ratingsBySongId,
+  songId,
+  justUpdateColor = false
+) {
+  ratingInput.style.backgroundColor = colorFromRatingStr(ratingInput.value);
+
+  if (justUpdateColor) {
+    return;
+  }
+
+  const ratingIsValid = stringRepresentsFloat(ratingInput.value);
+
   // force value to be between 0-10 w/ a step size of .25
-  ratingInput.value = stringRepresentsFloat(ratingInput.value)
+  const ratingVal = ratingIsValid
     ? Math.round(Math.max(0, Math.min(parseFloat(ratingInput.value), 10)) * 4) /
       4
-    : "";
-  ratingInput.style.backgroundColor = colorFromRatingStr(ratingInput.value);
+    : null;
+  ratingInput.value = ratingIsValid ? ratingVal : "";
+
+  const previousRating = ratingsBySongId.get(songId) ?? null;
+
+  // rating not changed
+  if (ratingVal === ratingsBySongId.get(songId)) {
+    return;
+  }
+
+  // if the rating existed but no longer does, revert to previous rating
+  if (ratingVal === null) {
+    ratingInput.value = previousRating;
+    return;
+  }
+
+  // submit new rating
+  sendRequest("POST", `/api/player/rate_song/${playerCode}`, {
+    song_id: songId,
+    rating: ratingVal,
+  })
+    .then(() => {
+      ratingsBySongId.set(songId, ratingVal);
+    })
+    .catch((err) => {
+      ratingInput.value = previousRating;
+      updateRatingInput(ratingInput, ratingsBySongId, songId, true);
+      alert("Ratings submission failed: " + err.message);
+    });
 }
 
 let playlists;
@@ -40,7 +94,7 @@ function createPlaylistElements(gameData) {
   // matter that much here)
   const ratingsBySongId = new Map();
   gameData.ratings.forEach((rating) => {
-    ratingsBySongId.set(rating.song_id, rating);
+    ratingsBySongId.set(rating.song_id, rating.rating);
   });
 
   const playlistContainer = document.getElementById("playlists");
@@ -160,9 +214,9 @@ function createPlaylistElements(gameData) {
           ? ratingsBySongId.get(song.song_id)
           : "",
       });
-      updateRatingInput(ratingInput);
+      updateRatingInput(ratingInput, ratingsBySongId, song.song_id, true);
       ratingInput.addEventListener("blur", (event) => {
-        updateRatingInput(event.target);
+        updateRatingInput(event.target, ratingsBySongId, song.song_id);
       });
 
       // ratings aren't allowed to be submitted for non-active games
@@ -176,10 +230,6 @@ function createPlaylistElements(gameData) {
     currPlaylistContent.appendChild(songRow);
   });
 }
-
-const playerCode = new URLSearchParams(window.location.search).get(
-  "player_code"
-);
 
 // generate the dynamic content from the player_code parameter in the url
 let gameData;
