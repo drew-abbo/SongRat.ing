@@ -125,7 +125,15 @@ function createPlaylistElements(gameData) {
       });
 
       currPlaylist.appendChild(currPlaylistContent);
-      playlistContainer.appendChild(currPlaylist);
+
+      if (currPlaylistIsOwnPlaylist) {
+        playlistContainer.insertBefore(
+          currPlaylist,
+          playlistContainer.firstChild
+        );
+      } else {
+        playlistContainer.appendChild(currPlaylist);
+      }
 
       songsInPlaylist = 0;
     }
