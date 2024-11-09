@@ -1,4 +1,39 @@
 /**
+ * A shortcut for creating complex HTML elements.
+ *
+ * @param {string} tag The HTML tag name e.g. `"div"`.
+ * @param {string[]} [classes=[]] The classes this element belongs to.
+ * @param {Object.<string, *>} [attributes={}] A map of attributes to apply to
+ *  this element.
+ * @param {HTMLElement[]} [innerElements=[]] Elements to be appended as children
+ *  to this one.
+ * @returns {HTMLElement} The newly created element.
+ *
+ * @example
+ * someDiv.appendChild(
+ *   newElement("a", "important-link", {
+ *     href: "https://google.com",
+ *     target: "_blank",
+ *     rel: "noopener noreferrer",
+ *     innerText: "Link 🗗",
+ *   })
+ * );
+ */
+function newElement(tag, classes = [], attributes = {}, innerElements = []) {
+  const element = document.createElement(tag);
+  for (let className of classes) {
+    element.classList.add(className);
+  }
+  for (let [attribute, value] of Object.entries(attributes)) {
+    element[attribute] = value;
+  }
+  for (let innerElement of innerElements) {
+    element.appendChild(innerElement);
+  }
+  return element;
+}
+
+/**
  * An object with methods for creating components.
  */
 const components = Object.freeze({
@@ -20,27 +55,29 @@ const components = Object.freeze({
     const maxSongs = gameInfo.max_songs_per_playlist;
     const gameDescription = gameInfo.game_description;
 
-    // game name
-    const gameNameElement = document.createElement("h2");
-    gameNameElement.innerText = gameName;
+    const gameInfoElements = [
+      // game name
+      newElement("h2", [], {
+        innerText: gameName,
+      }),
 
-    // songs per playlist
-    const songsPerPlaylistElement = document.createElement("h4");
-    songsPerPlaylistElement.innerText =
-      (minSongs === maxSongs ? minSongs : `${minSongs}-${maxSongs}`) +
-      " song" +
-      (minSongs === 1 && maxSongs === 1 ? "" : "s") +
-      " per playlist";
+      // songs per playlist
+      newElement("h4", [], {
+        innerText:
+          (minSongs === maxSongs ? minSongs : `${minSongs}-${maxSongs}`) +
+          " song" +
+          (minSongs === 1 && maxSongs === 1 ? "" : "s") +
+          " per playlist",
+      }),
+    ];
 
-    const gameInfoElements = [gameNameElement, songsPerPlaylistElement];
-
-    // game description and a horizontal rule (if provided)
+    // game description and a horizontal rule (if description provided)
     if (gameDescription) {
-      const gameDescriptionElement = document.createElement("pre");
-      gameDescriptionElement.innerText = gameDescription;
       gameInfoElements.push(
-        document.createElement("hr"),
-        gameDescriptionElement
+        newElement("hr"),
+        newElement("pre", [], {
+          innerText: gameDescription,
+        })
       );
     }
 
@@ -167,39 +204,4 @@ function colorFromRatingStr(valueStr) {
     val / 10
   );
   return `rgb(${ret.r}, ${ret.g}, ${ret.b})`;
-}
-
-/**
- * A shortcut for creating complex HTML elements.
- *
- * @param {string} tag The HTML tag name e.g. `"div"`.
- * @param {string[]} [classes=[]] The classes this element belongs to.
- * @param {Object.<string, *>} [attributes={}] A map of attributes to apply to
- *  this element.
- * @param {HTMLElement[]} [innerElements=[]] Elements to be appended as children
- *  to this one.
- * @returns {HTMLElement} The newly created element.
- *
- * @example
- * someDiv.appendChild(
- *   newElement("a", "important-link", {
- *     href: "https://google.com",
- *     target: "_blank",
- *     rel: "noopener noreferrer",
- *     innerText: "Link 🗗",
- *   })
- * );
- */
-function newElement(tag, classes = [], attributes = {}, innerElements = []) {
-  const element = document.createElement(tag);
-  for (let className of classes) {
-    element.classList.add(className);
-  }
-  for (let [attribute, value] of Object.entries(attributes)) {
-    element[attribute] = value;
-  }
-  for (let innerElement of innerElements) {
-    element.appendChild(innerElement);
-  }
-  return element;
 }

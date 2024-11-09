@@ -104,23 +104,22 @@ class Songs {
     };
 
     if (this._rows.length) {
-      newRow.hr = document.createElement("hr");
+      newRow.hr = newElement("hr");
     }
 
-    newRow.songDiv = document.createElement("div");
-    newRow.songDiv.classList.add("song");
+    newRow.songDiv = newElement("div", ["song"]);
 
-    newRow.songNameInput = document.createElement("input");
-    newRow.songNameInput.classList.add("song-name-input");
-    newRow.songNameInput.type = "text";
-    newRow.songNameInput.placeholder = "Song Name";
-    newRow.songNameInput.maxlength = 255;
+    newRow.songNameInput = newElement("input", ["song-name-input"], {
+      type: "text",
+      placeholder: "Song Name",
+      maxlength: 255,
+    });
 
-    newRow.artistInput = document.createElement("input");
-    newRow.artistInput.classList.add("song-artist-input");
-    newRow.artistInput.type = "text";
-    newRow.artistInput.placeholder = "Artist(s)";
-    newRow.artistInput.maxlength = 255;
+    newRow.artistInput = newElement("input", ["song-artist-input"], {
+      type: "text",
+      placeholder: "Artist(s)",
+      maxlength: 255,
+    });
 
     this._rows.push(newRow);
 
