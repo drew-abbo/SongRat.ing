@@ -352,7 +352,7 @@ document.getElementById("join-button").addEventListener("click", () => {
       }
 
       // save last used player code so it autofills on the home page next time
-      localStorage.setItem("lastUsedCode", code);
+      localStorage.setItem("lastUsedCode", inviteCode);
 
       window.location.href = `/player?player_code=${resJson.player_code}`;
     })
