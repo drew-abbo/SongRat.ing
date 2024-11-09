@@ -23,6 +23,135 @@ function displayErrorScreen(msg) {
   errorMessageElement.style.visibility = "visible";
 }
 
+// updates a rating input based on it's value (rounds value, sets bg color)
+function updateRatingInput(ratingInput) {
+  // force value to be between 0-10 w/ a step size of .25
+  ratingInput.value = stringRepresentsFloat(ratingInput.value)
+    ? Math.round(Math.max(0, Math.min(parseFloat(ratingInput.value), 10)) * 4) /
+      4
+    : "";
+  ratingInput.style.backgroundColor = colorFromRatingStr(ratingInput.value);
+}
+
+let playlists;
+function createPlaylistElements(gameData) {
+  // TODO:
+  // - when the game is "waiting_for_players" do not give rating inputs
+  // - when the game is "active" give rating inputs
+  // - when the game is "finished" give *disabled* rating inputs
+  // - never give rating inputs for the reviewer's playlist
+  // - enter key should move to the next input in the playlist
+
+  const playlistContainer = document.getElementById("playlists");
+
+  let currPlayerName;
+  let currPlaylistIsOwnPlaylist;
+  let currPlaylist;
+  let currPlaylistContent;
+  let songsInPlaylist = 0;
+  gameData.songs.forEach((song) => {
+    // create new playlist object if we reach a new player name
+    if (song.player_name !== currPlayerName) {
+      currPlayerName = song.player_name;
+      currPlaylistIsOwnPlaylist = gameData.player_name === currPlayerName;
+
+      // playlist name div + text
+      const playlistName = newElement("div", ["playlist-name"], {}, [
+        newElement("h3", ["playlist-name-text"], {
+          innerText: currPlaylistIsOwnPlaylist
+            ? "Your Playlist"
+            : `${currPlayerName}'s Playlist`,
+        }),
+      ]);
+
+      currPlaylist = newElement("div", ["playlist"], {}, [playlistName]);
+      currPlaylistContent = newElement("div", ["playlist-content"]);
+
+      // optional playlist link div in playlist content div
+      let playlistLink;
+      for (let i = 0; i < gameData.players.length; i++) {
+        if (gameData.players[i].player_name === currPlayerName) {
+          playlistLink = gameData.players[i].playlist_link;
+          break;
+        }
+      }
+      if (playlistLink) {
+        const playlistLinkContainer = newElement(
+          "div",
+          ["playlist-link-container"],
+          {},
+          [
+            newElement("a", ["playlist-link"], {
+              href: playlistLink,
+              target: "_blank",
+              rel: "noopener noreferrer",
+              innerText: "Link 🗗",
+            }),
+          ]
+        );
+        currPlaylistContent.appendChild(playlistLinkContainer);
+      }
+
+      // add callback so clicking the playlist name opens/closes the content
+      // contained elements need to be unable to be tabbed to when hiding
+      const content = currPlaylistContent;
+      playlistName.addEventListener("click", () => {
+        if (content.classList.contains("open")) {
+          content.style.maxHeight = null;
+          content.classList.remove("open");
+          content // remove tabbability
+            .querySelectorAll(".playlist-link, .rating-input")
+            .forEach((element) => {
+              console.log(`!`);
+              element.tabIndex = -1;
+            });
+          setTimeout(() => {
+            // spam proof
+            if (!content.classList.contains("open")) {
+              content.style.visibility = "collapse";
+            }
+          }, 350);
+        } else {
+          content.style.maxHeight = `${content.scrollHeight}px`;
+          content.classList.add("open");
+          content // restore tabbability
+            .querySelectorAll(".playlist-link, .rating-input")
+            .forEach((element) => {
+              element.tabIndex = 0;
+            });
+          content.style.visibility = "visible";
+        }
+      });
+
+      currPlaylist.appendChild(currPlaylistContent);
+      playlistContainer.appendChild(currPlaylist);
+
+      songsInPlaylist = 0;
+    }
+
+    if (songsInPlaylist !== 0) {
+      currPlaylistContent.appendChild(newElement("hr"));
+    }
+    songsInPlaylist++;
+
+    const songRow = newElement("div", ["song-row"], {}, [
+      newElement("div", ["song"], {}, [
+        newElement("h3", ["song-name"], { innerText: song.title }),
+        newElement("p", ["song-artist"], { innerText: song.artist }),
+      ]),
+    ]);
+
+    const ratingInput = newElement("input", ["rating-input"]);
+    updateRatingInput(ratingInput);
+    ratingInput.addEventListener("blur", (event) => {
+      updateRatingInput(event.target);
+    });
+    songRow.appendChild(ratingInput);
+
+    currPlaylistContent.appendChild(songRow);
+  });
+}
+
 const playerCode = new URLSearchParams(window.location.search).get(
   "player_code"
 );
@@ -53,14 +182,14 @@ let gameData;
       document.getElementById("player-code").innerText = playerCode;
 
       components.game_info(document.getElementById("game-info"), resJson);
-      gameData = resJson;
 
-      createPlaylistElements();
+      createPlaylistElements(resJson);
 
       // remove error message text box since we're not going to call
       // displayErrorScreen() from here
       document.getElementById("error-message").remove();
 
+      gameData = resJson;
       makeDynamicElementsVisible();
     })
     .catch((err) => {
@@ -83,42 +212,41 @@ document
     }, 1500);
   });
 
-// handle playlists expanding when you click the playlist header
-document.querySelectorAll(".playlist-name").forEach((playlistName) => {
-  playlistName.addEventListener("click", () => {
-    const content = playlistName.nextElementSibling;
-    if (content.classList.contains("open")) {
-      content.style.maxHeight = null;
-      content.classList.remove("open");
-    } else {
-      content.style.maxHeight = `${content.scrollHeight}px`;
-      content.classList.add("open");
-    }
-  });
-});
+// when the user hits enter in a rating input move to the next one
+document.addEventListener("keydown", function (event) {
+  if (
+    event.key !== "Enter" ||
+    !document.activeElement.classList.contains("rating-input")
+  ) {
+    return;
+  }
+  event.preventDefault();
 
-// REMOVE LATER: start with all playlists open
-document.querySelectorAll(".playlist-content").forEach((content) => {
-  content.style.maxHeight = `${content.scrollHeight}px`;
-  content.classList.add("open");
-});
+  // need to traverse the DOM to get the next input
+  //
+  //  <div class="playlist-content">
+  //    ...
+  //    <div class="song-row">
+  //      <div class="song">...</div>
+  //      <input class="rating-input" />    <- from here
+  //    </div>
+  //    <hr />
+  //    <div class="song-row">
+  //      <div class="song">...</div>
+  //      <input class="rating-input" />    <- to here
+  //    </div>
+  //    ...
+  //  </div>
 
-// rating textboxes change color and round when you deselect them
-document.querySelectorAll(".rating-input").forEach((input) => {
-  input.addEventListener("blur", () => {
-    // force value to be between 0-10 w/ a step size of .25
-    input.value = stringRepresentsFloat(input.value)
-      ? Math.round(Math.max(0, Math.min(parseFloat(input.value), 10)) * 4) / 4
-      : "";
-    input.style.backgroundColor = colorFromRatingStr(input.value);
-  });
-});
+  const nextRatingInput = document.activeElement
+    .closest("div")
+    .nextElementSibling?.nextElementSibling.querySelectorAll(
+      ".rating-input"
+    )[0];
 
-function createPlaylistElements() {
-  // TODO: use `gameData` to create the playlist elements
-  // - when the game is "waiting_for_players" do not give rating inputs
-  // - when the game is "active" give rating inputs
-  // - when the game is "finished" give *disabled* rating inputs
-  // - never give rating inputs for the reviewer's playlist
-  // - add <hr> elements in between all songs
-}
+  if (nextRatingInput) {
+    nextRatingInput.focus();
+  } else {
+    document.activeElement.blur();
+  }
+});
