@@ -21,7 +21,7 @@ fi
 
 docker-compose stop
 
-git pull || docker-compose up -d && echo "Patch failed to be applied ('git pull' failed)." && exit 1
+git pull
 
 docker-compose up --build -d
 echo "Patch applied."
