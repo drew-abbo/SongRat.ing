@@ -7,6 +7,9 @@
 # Data Files
 data.json
 
+# SSL Certificates
+frontend/certificates/
+
 # Logs
 logs
 *.log
