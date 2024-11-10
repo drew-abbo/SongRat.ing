@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cd "$(dirname "$0")" && cd ..
+
 if [[ "$#" -ne 0 && "$#" -gt 1 ]]; then
   echo "Too many arguments."
   echo "Usage: $0 [--force]"
