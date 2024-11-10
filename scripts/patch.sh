@@ -14,7 +14,7 @@ fi
 
 git fetch origin
 
-if [[ "$1" != "--force" && "$(git rev-parse main)" == "$(git rev-parse origin/main)" ]]; then
+if [[ "$#" -ne 1 && "$(git rev-parse main)" == "$(git rev-parse origin/main)" ]]; then
   echo "Branch already up to date, no changes being patched (use '--force' to override)."
   exit 0
 fi
