@@ -66,7 +66,13 @@ sudo cp -r /etc/letsencrypt $(pwd)/frontend/certificates
 echo "0 0,12 * * * $(pwd)/scripts/renew_ssl.sh" | sudo tee -a /var/spool/cron/crontabs/root > /dev/null
 ```
 
-8. Look at [.env.example](./.env.example) and create a `.env` file that matches
+8. Set up auto patching.
+
+```bash
+echo "* * * * * $(pwd)/scripts/patch.sh" | sudo tee -a /var/spool/cron/crontabs/root > /dev/null
+```
+
+9.  Look at [.env.example](./.env.example) and create a `.env` file that matches
    the template.
 
 ### Managing the Server
