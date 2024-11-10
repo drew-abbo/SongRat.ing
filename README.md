@@ -103,6 +103,12 @@ To patch an update:
 ./scripts/patch.sh
 ```
 
+To patch an update (force patch):
+
+```bash
+./scripts/patch.sh --force
+```
+
 To manually view and edit the database (be careful):
 
 ```bash
