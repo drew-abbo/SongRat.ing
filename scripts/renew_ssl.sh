@@ -5,7 +5,7 @@ if [[ "$EUID" -ne 0 ]]; then
   exit 1
 fi
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$(dirname "$0")" && cd ..
 
 # stop frontend (can't renew while port 80 is being used)
 docker-compose stop frontend
