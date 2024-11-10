@@ -122,3 +122,12 @@ To manually renew SSL certificate:
 ```bash
 sudo ./scripts/renew_ssl.sh
 ```
+
+## Development
+
+To work on this project you'll need to set up your `.env` file and generate self
+signed SSL certificates (this script does all of that):
+
+```bash
+./scripts/dev_setup.sh
+```
