@@ -94,17 +94,17 @@ docker-compose stop $CONTAINER
 To patch an update:
 
 ```bash
-docker-compose stop && git pull && docker-compose up --build -d
+./scripts/patch.sh
+```
+
+To manually view and edit the database (be careful):
+
+```bash
+./scripts/db_connect.sh
 ```
 
 To manually renew SSL certificate:
 
 ```bash
 sudo ./scripts/renew_ssl
-```
-
-To manually view and edit the database (be careful):
-
-```bash
-./database/connect.sh
 ```
