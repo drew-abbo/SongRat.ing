@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ "$#" -gt 1 ]]; then
+if [[ "$#" -ne 0 && "$#" -gt 1 ]]; then
   echo "Too many arguments."
   echo "Usage: $0 [--force]"
   exit 1
