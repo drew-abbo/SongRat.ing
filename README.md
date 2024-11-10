@@ -94,7 +94,7 @@ docker-compose stop $CONTAINER
 To patch an update:
 
 ```bash
-docker-compose stop && git pull && docker-compose up --build
+docker-compose stop && git pull && docker-compose up --build -d
 ```
 
 To manually renew SSL certificate:
