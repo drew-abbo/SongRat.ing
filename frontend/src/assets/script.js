@@ -44,7 +44,7 @@ const components = Object.freeze({
       `<div class="top-nav-bar">
         <a href="/">Home</a>
         <a
-          href="https://github.com/drew-abbo/song_rating_game"
+          href="https://github.com/drew-abbo/SongRat.ing"
           target="_blank"
           rel="noopener noreferrer"
         >GitHub</a>

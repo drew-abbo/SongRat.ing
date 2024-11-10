@@ -53,7 +53,7 @@ docker-compose --version
 
 ```bash
 sudo apt install git
-sudo git clone https://github.com/drew-abbo/song_rating_game.git song_rating
+sudo git clone https://github.com/drew-abbo/SongRat.ing.git song_rating
 cd song_rating
 ```
 
