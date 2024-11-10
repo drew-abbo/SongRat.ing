@@ -15,8 +15,8 @@ install.
 
 1. Port forward the server on ports 80 and 443.
 
-2. Start by adjusting the settings for DNS settings for the domain to point to
-   the public IP address of the server.
+2. Adjusting the DNS settings for the domain name so it points to the public IP
+   of the server.
 
 3. Ensure everything is up to date and install some basics.
 
@@ -120,5 +120,5 @@ sudo ./scripts/db_connect.sh
 To manually renew SSL certificate:
 
 ```bash
-sudo ./scripts/renew_ssl
+sudo ./scripts/renew_ssl.sh
 ```
