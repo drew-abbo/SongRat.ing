@@ -58,6 +58,7 @@ p {
 }
 #player-code {
   background-color: var(--accent-color-3);
+  color: var(--color-black);
   border-radius: 10px;
   margin: 0;
   padding: 10px;

@@ -54,6 +54,7 @@ p {
   text-align: center;
   font-weight: bold;
   background-color: var(--accent-color-3);
+  color: var(--color-black);
 }
 .enter-code button:hover {
   background-color: var(--accent-color-2);

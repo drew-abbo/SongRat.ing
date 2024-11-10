@@ -120,6 +120,7 @@ p {
   text-align: center;
   font-weight: bold;
   background-color: var(--accent-color-3);
+  color: var(--color-black);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 #join-button:hover {
