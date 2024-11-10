@@ -49,15 +49,15 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-6. Clone the repo and move into it.
+1. Clone the repo and move into it (clone as root so root cron jobs work).
 
 ```bash
 sudo apt install git
-git clone https://github.com/drew-abbo/song_rating_game.git song_rating
+sudo git clone https://github.com/drew-abbo/song_rating_game.git song_rating
 cd song_rating
 ```
 
-7. Set up SSL and get it to auto renew with a cron job.
+1. Set up SSL and get it to auto renew with a cron job.
 
 ```bash
 sudo systemctl start cron
@@ -89,32 +89,32 @@ To view the logs for a component of the server (`$CONTAINER` can be
 `frontend`, `backend`, or `postgres`):
 
 ```bash
-docker-compose logs -f $CONTAINER
+sudo docker-compose logs -f $CONTAINER
 ```
 
 To take down a component of the server (`$CONTAINER` can be `frontend`,
 `backend`, or `postgres`):
 
 ```bash
-docker-compose stop $CONTAINER
+sudo docker-compose stop $CONTAINER
 ```
 
 To patch an update:
 
 ```bash
-./scripts/patch.sh
+sudo ./scripts/patch.sh
 ```
 
 To patch an update (force patch):
 
 ```bash
-./scripts/patch.sh --force
+sudo ./scripts/patch.sh --force
 ```
 
 To manually view and edit the database (be careful):
 
 ```bash
-./scripts/db_connect.sh
+sudo ./scripts/db_connect.sh
 ```
 
 To manually renew SSL certificate:
