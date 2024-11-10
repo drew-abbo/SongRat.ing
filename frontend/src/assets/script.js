@@ -43,7 +43,11 @@ const components = Object.freeze({
       "beforeend",
       `<div class="top-nav-bar">
         <a href="/">Home</a>
-        <a href="https://github.com/drew-abbo/song_rating_game">GitHub</a>
+        <a
+          href="https://github.com/drew-abbo/song_rating_game"
+          target="_blank"
+          rel="noopener noreferrer"
+        >GitHub</a>
       </div>`
     );
   },
