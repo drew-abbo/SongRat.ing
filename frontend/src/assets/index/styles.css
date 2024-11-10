@@ -54,11 +54,11 @@ p {
 .enter-code button {
   text-align: center;
   font-weight: bold;
-  background-color: var(--accent-color-3);
+  background-color: var(--accent-color-2);
   color: var(--color-black);
 }
 .enter-code button:hover {
-  background-color: var(--accent-color-2);
+  background-color: var(--accent-color-1);
 }
 @media (max-width: 440px) {
   .enter-code input {
@@ -80,9 +80,9 @@ p {
   font-weight: bold;
   text-decoration: none;
   color: var(--color-black);
-  background-color: var(--accent-color-3);
+  background-color: var(--accent-color-2);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 #new-game-button:hover {
-  background-color: var(--accent-color-2);
+  background-color: var(--accent-color-1);
 }

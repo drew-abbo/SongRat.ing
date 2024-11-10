@@ -1,9 +1,7 @@
 :root {
   --bg-color: #2e2c2f; /* good contrast with white text */
-  --accent-color-1: #f3e8ee; /* good contrast with black text */
-  --accent-color-2: #bacdb0; /* good contrast with black text */
-  --accent-color-3: #729b79; /* good contrast with black text */
-  --accent-color-4: #475b63; /* good contrast with white text */
+  --accent-color-1: #bacdb0; /* good contrast with black text */
+  --accent-color-2: #729b79; /* good contrast with black text */
 
   --color-error: #ca4e4e; /* good contrast with dark background */
 
@@ -27,7 +25,7 @@ body {
 
 /* top navigation bar */
 .top-nav-bar {
-  background-color: var(--accent-color-3);
+  background-color: var(--accent-color-2);
   width: 100%;
   min-height: 50px;
   display: flex;
@@ -46,7 +44,7 @@ body {
   font-weight: bold;
 }
 .top-nav-bar a:hover {
-  background-color: var(--accent-color-2);
+  background-color: var(--accent-color-1);
 }
 
 /* game info */
@@ -54,7 +52,7 @@ body {
   margin: 10px;
   padding: 0 25px;
   border-radius: 25px;
-  border: 5px solid var(--accent-color-3);
+  border: 5px solid var(--accent-color-2);
   background-color: var(--color-white);
   color: var(--color-black);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -65,7 +63,7 @@ body {
   text-shadow: none;
 }
 #game-info hr {
-  border: 1px solid var(--accent-color-2);
+  border: 1px solid var(--accent-color-1);
 }
 #game-info pre {
   white-space: pre-wrap;

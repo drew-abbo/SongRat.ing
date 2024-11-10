@@ -35,7 +35,7 @@ p {
   margin: 10px;
   padding: 10px 25px;
   border-radius: 25px;
-  border: 5px solid var(--accent-color-3);
+  border: 5px solid var(--accent-color-2);
   background-color: var(--color-white);
   color: var(--color-black);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -57,7 +57,7 @@ p {
   text-overflow: ellipsis;
 }
 #player-code {
-  background-color: var(--accent-color-3);
+  background-color: var(--accent-color-2);
   color: var(--color-black);
   border-radius: 10px;
   margin: 0;
@@ -68,7 +68,7 @@ p {
   font-family: var(--site-font-mono);
 }
 #player-code:hover {
-  background-color: var(--accent-color-2);
+  background-color: var(--accent-color-1);
 }
 #player-code::after {
   content: "Copied";
@@ -83,7 +83,7 @@ p {
   padding: 10px;
   background-color: var(--color-white);
   border-radius: 10px;
-  border: 2px solid var(--accent-color-2);
+  border: 2px solid var(--accent-color-1);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.5s ease, visibility 0s 0.5s;
@@ -104,7 +104,7 @@ p {
 }
 
 .content hr {
-  border: 1px solid var(--accent-color-2);
+  border: 1px solid var(--accent-color-1);
 }
 
 #playlists {
@@ -117,8 +117,8 @@ p {
   margin: 10px 0;
   padding: 0;
   border-radius: 25px;
-  border: 5px solid var(--accent-color-3);
-  background-color: var(--accent-color-3);
+  border: 5px solid var(--accent-color-2);
+  background-color: var(--accent-color-2);
   color: var(--color-black);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   overflow: hidden;
@@ -128,13 +128,19 @@ p {
   margin: 0;
 }
 
+.playlist:has(.playlist-name:hover) {
+  border-color: var(--accent-color-1);
+}
 .playlist-name {
-  background-color: var(--accent-color-3);
+  background-color: var(--accent-color-2);
   color: white;
   cursor: pointer;
   width: 100%;
   text-align: center;
   padding: 10px 0;
+}
+.playlist-name:hover {
+  background-color: var(--accent-color-1);
 }
 .playlist-name-text {
   margin: 0 20px;
@@ -165,7 +171,7 @@ p {
   justify-content: center;
 }
 .playlist-link {
-  background-color: var(--accent-color-3);
+  background-color: var(--accent-color-2);
   padding: 10px;
   border-radius: 10px;
   text-decoration: none;
@@ -174,7 +180,7 @@ p {
   font-weight: bold;
 }
 .playlist-link:hover {
-  background-color: var(--accent-color-2);
+  background-color: var(--accent-color-1);
 }
 
 .song-row {

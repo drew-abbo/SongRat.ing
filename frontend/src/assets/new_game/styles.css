@@ -43,7 +43,7 @@ textarea {
 .content input[type="checkbox"] {
   width: 20px;
   height: 20px;
-  accent-color: var(--accent-color-3);
+  accent-color: var(--accent-color-2);
 }
 
 .required-label::after {
@@ -88,10 +88,10 @@ textarea {
   border: none;
   text-align: center;
   font-weight: bold;
-  background-color: var(--accent-color-3);
+  background-color: var(--accent-color-2);
   color: var(--color-black);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 #create-button:hover {
-  background-color: var(--accent-color-2);
+  background-color: var(--accent-color-1);
 }

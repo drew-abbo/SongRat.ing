@@ -35,7 +35,7 @@ p {
 }
 
 .content hr {
-  border: 1px solid var(--accent-color-2);
+  border: 1px solid var(--accent-color-1);
 }
 
 @media (min-width: 500px) {
@@ -119,10 +119,10 @@ p {
   border: none;
   text-align: center;
   font-weight: bold;
-  background-color: var(--accent-color-3);
+  background-color: var(--accent-color-2);
   color: var(--color-black);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 #join-button:hover {
-  background-color: var(--accent-color-2);
+  background-color: var(--accent-color-1);
 }
