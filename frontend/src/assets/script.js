@@ -39,16 +39,31 @@ function newElement(tag, classes = [], attributes = {}, innerElements = []) {
 const components = Object.freeze({
   // top navigation bar
   top_nav_bar: () => {
-    document.body.insertAdjacentHTML(
-      "beforeend",
-      `<div class="top-nav-bar">
-        <a href="/">Home</a>
-        <a
-          href="https://github.com/drew-abbo/SongRat.ing"
-          target="_blank"
-          rel="noopener noreferrer"
-        >GitHub</a>
-      </div>`
+    const logo = newElement("img", [], {
+      src: "assets/song_rat_small.png",
+      alt: "logo",
+    });
+    logo.addEventListener("click", () => {
+      if (logo.classList.contains("do-a-spin")) {
+        return;
+      }
+      logo.classList.add("do-a-spin");
+      setTimeout(() => {
+        logo.classList.remove("do-a-spin");
+      }, 500);
+    });
+
+    document.body.appendChild(
+      newElement("div", ["top-nav-bar"], {}, [
+        logo,
+        newElement("a", [], { href: "/", innerText: "Home" }),
+        newElement("a", [], {
+          href: "https://github.com/drew-abbo/SongRat.ing",
+          target: "_blank",
+          rel: "noopener noreferrer",
+          innerText: "GitHub",
+        }),
+      ])
     );
   },
 

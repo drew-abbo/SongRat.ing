@@ -32,6 +32,11 @@ body {
   align-items: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
+.top-nav-bar img {
+  padding: 0 15px;
+  width: 40px;
+  height: 40px;
+}
 .top-nav-bar a {
   color: var(--color-black);
   height: 100%;
@@ -69,4 +74,17 @@ body {
   white-space: pre-wrap;
   text-align: left;
   font-family: var(--site-font);
+}
+
+/* applies makes something do a 2 second spin */
+@keyframes spin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+.do-a-spin {
+  animation: spin 0.5s ease-in-out infinite;
 }

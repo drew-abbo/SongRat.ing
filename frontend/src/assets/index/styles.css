@@ -10,6 +10,33 @@
   text-align: center;
 }
 
+@keyframes dance {
+  0% {
+    transform: translateX(0px) translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-5px) translateY(-2.5px) rotate(-2.5deg);
+  }
+  50% {
+    transform: translateX(0px) translateY(0px) rotate(0deg);
+  }
+  75% {
+    transform: translateX(5px) translateY(-2.5px) rotate(2.5deg);
+  }
+  100% {
+    transform: translateX(0px) translateY(0px) rotate(0deg);
+  }
+}
+#big-logo {
+  padding-top: 20px;
+  width: clamp(150px, 32vw, 270px);
+  height: calc(clamp(150px, 32vw, 270px) * 3 / 4);
+  animation-name: dance;
+  animation-timing-function: ease-out, ease-out, ease-out, linear;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
 .content h1,
 h2,
 h3,
