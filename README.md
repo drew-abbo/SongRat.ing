@@ -1,6 +1,6 @@
 ![song rat logo](./song_rat.png)
 
-> *Special thanks to [Ryan](https://github.com/RyanTurley) the logo!*
+> *Special thanks to [Ryan](https://github.com/RyanTurley) for the logo!*
 
 # SongRat.ing
 
