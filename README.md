@@ -1,4 +1,4 @@
-<img src="./song_rat.png" style="display: block; margin: 0 auto; max-width: 300px" />
+![song rat logo](./song_rat.png)
 
 > *Special thanks to [Ryan](https://github.com/RyanTurley) the logo!*
 
