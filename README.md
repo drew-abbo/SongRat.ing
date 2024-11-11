@@ -1,3 +1,7 @@
+<img src="./song_rat.png" style="display: block; margin: 0 auto; max-width: 300px" />
+
+> *Special thanks to [Ryan](https://github.com/RyanTurley) the logo!*
+
 # SongRat.ing
 
 This repo is the source code for a web app that lets you create playlists and
