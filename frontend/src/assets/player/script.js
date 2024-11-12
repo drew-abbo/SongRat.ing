@@ -140,7 +140,7 @@ function createPlaylistElements(gameData) {
               href: playlistLink,
               target: "_blank",
               rel: "noopener noreferrer",
-              innerText: "Link 🗗",
+              innerText: "Link",
             }),
           ]
         );
