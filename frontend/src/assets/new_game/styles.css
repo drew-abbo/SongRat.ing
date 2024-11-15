@@ -74,6 +74,13 @@ textarea {
   margin: 0 5px;
 }
 
+#require-playlist-link-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
 #invalid-input-reason {
   color: var(--color-error);
   margin: 10px 20px;
