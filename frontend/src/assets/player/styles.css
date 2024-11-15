@@ -206,6 +206,7 @@ p {
 }
 
 .rating-input {
+  font-size: 16px;
   border-radius: 8px;
   margin-left: 10px;
   outline: none;
@@ -213,7 +214,7 @@ p {
   background-color: var(--color-white);
   color: var(--color-black);
   text-align: left;
-  width: 27px;
+  width: 33px;
   height: 34px;
   padding: 0 10px;
   background-color: red;
