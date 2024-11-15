@@ -87,6 +87,12 @@ function updateRatingInput(
     });
 }
 
+// a list of all playlists that are opened (used to save that state between
+// sessions)
+const openPlaylistsByName = new Set(
+  JSON.parse(sessionStorage.getItem("openPlaylistsByName"))
+);
+
 let playlists;
 function createPlaylistElements(gameData) {
   // create a map of all ratings for every song so we can easily look up ratings
@@ -98,6 +104,8 @@ function createPlaylistElements(gameData) {
   });
 
   const playlistContainer = document.getElementById("playlists");
+
+  const callbacksToCallOnceAllPlaylistsCreated = [];
 
   let currPlayerName;
   let currPlaylistIsOwnPlaylist;
@@ -150,14 +158,14 @@ function createPlaylistElements(gameData) {
       // add callback so clicking the playlist name opens/closes the content
       // contained elements need to be unable to be tabbed to when hiding
       const content = currPlaylistContent;
-      playlistName.addEventListener("click", () => {
+      const playerName = currPlayerName;
+      const openPlaylistCallback = () => {
         if (content.classList.contains("open")) {
           content.style.maxHeight = null;
           content.classList.remove("open");
           content // remove tabbability
             .querySelectorAll(".playlist-link, .rating-input")
             .forEach((element) => {
-              console.log(`!`);
               element.tabIndex = -1;
             });
           setTimeout(() => {
@@ -166,6 +174,11 @@ function createPlaylistElements(gameData) {
               content.style.visibility = "collapse";
             }
           }, 350);
+          openPlaylistsByName.delete(playerName);
+          sessionStorage.setItem(
+            "openPlaylistsByName",
+            JSON.stringify([...openPlaylistsByName])
+          );
         } else {
           content.style.maxHeight = `${content.scrollHeight}px`;
           content.classList.add("open");
@@ -175,8 +188,20 @@ function createPlaylistElements(gameData) {
               element.tabIndex = 0;
             });
           content.style.visibility = "visible";
+          openPlaylistsByName.add(playerName);
+          sessionStorage.setItem(
+            "openPlaylistsByName",
+            JSON.stringify([...openPlaylistsByName])
+          );
         }
-      });
+      };
+      playlistName.addEventListener("click", openPlaylistCallback);
+
+      // if the playlist was open, open it again (wait 1/4 of a sec because it
+      // hasn't been added to the DOM yet)
+      if (openPlaylistsByName.has(currPlayerName)) {
+        callbacksToCallOnceAllPlaylistsCreated.push(openPlaylistCallback);
+      }
 
       currPlaylist.appendChild(currPlaylistContent);
 
@@ -229,6 +254,14 @@ function createPlaylistElements(gameData) {
 
     currPlaylistContent.appendChild(songRow);
   });
+
+  for (const func of callbacksToCallOnceAllPlaylistsCreated) {
+    try {
+      func();
+    } catch (err) {
+      console.error(err);
+    }
+  }
 }
 
 // generate the dynamic content from the player_code parameter in the url
