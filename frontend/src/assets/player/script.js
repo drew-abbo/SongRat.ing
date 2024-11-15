@@ -44,9 +44,8 @@ function updateRatingInput(
   songId,
   justUpdateColor = false
 ) {
-  ratingInput.style.backgroundColor = colorFromRatingStr(ratingInput.value);
-
   if (justUpdateColor) {
+    ratingInput.style.backgroundColor = colorFromRatingStr(ratingInput.value);
     return;
   }
 
@@ -63,14 +62,18 @@ function updateRatingInput(
 
   // rating not changed
   if (ratingVal === ratingsBySongId.get(songId)) {
+    ratingInput.style.backgroundColor = colorFromRatingStr(ratingInput.value);
     return;
   }
 
   // if the rating existed but no longer does, revert to previous rating
   if (ratingVal === null) {
     ratingInput.value = previousRating;
+    ratingInput.style.backgroundColor = colorFromRatingStr(ratingInput.value);
     return;
   }
+
+  ratingInput.style.backgroundColor = colorFromRatingStr(ratingInput.value);
 
   // submit new rating
   sendRequest("POST", `/api/player/rate_song/${playerCode}`, {
