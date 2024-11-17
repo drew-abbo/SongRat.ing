@@ -218,4 +218,14 @@ p {
   height: 34px;
   padding: 0 10px;
   background-color: red;
+
+  /* remove up/down arrows (Firefox) */
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+/* remove up/down arrows (Chrome, Safari, etc...) */
+.rating-input::-webkit-outer-spin-button,
+.rating-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

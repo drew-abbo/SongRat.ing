@@ -49,7 +49,8 @@ function updateRatingInput(
     return;
   }
 
-  const ratingIsValid = stringRepresentsFloat(ratingInput.value);
+  const ratingIsValid =
+    ratingInput.checkValidity() && stringRepresentsFloat(ratingInput.value);
 
   // force value to be between 0-10 w/ a step size of .25
   const ratingVal = ratingIsValid
@@ -241,6 +242,7 @@ function createPlaylistElements(gameData) {
         value: ratingsBySongId.has(song.song_id)
           ? ratingsBySongId.get(song.song_id)
           : "",
+        type: "number",
         inputmode: "decimal",
       });
       updateRatingInput(ratingInput, ratingsBySongId, song.song_id, true);
