@@ -247,6 +247,9 @@ function createPlaylistElements(gameData) {
       ratingInput.addEventListener("blur", (event) => {
         updateRatingInput(event.target, ratingsBySongId, song.song_id);
       });
+      ratingInput.addEventListener("focus", (event) => {
+        ratingInput.select();
+      });
 
       // ratings aren't allowed to be submitted for non-active games
       if (gameData.game_status !== "active") {
