@@ -245,11 +245,7 @@ function createPlaylistElements(gameData) {
         value: ratingsBySongId.has(song.song_id)
           ? ratingsBySongId.get(song.song_id)
           : "",
-        type: "number",
         inputmode: "decimal",
-        min: "0",
-        max: "10",
-        step: "0.25",
       });
       updateRatingInput(ratingInput, ratingsBySongId, song.song_id, true);
       ratingInput.addEventListener("blur", (event) => {
