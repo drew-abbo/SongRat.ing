@@ -49,11 +49,7 @@ function updateRatingInput(
     return;
   }
 
-  // need special validity check for 0 because safari returns 0 for an invalid
-  // numeric input
-  const ratingIsValid =
-    (ratingInput.value == 0 ? ratingInput.checkValidity() : true) &&
-    stringRepresentsFloat(ratingInput.value);
+  const ratingIsValid = stringRepresentsFloat(ratingInput.value);
 
   // force value to be between 0-10 w/ a step size of .25
   const ratingVal = ratingIsValid
@@ -245,7 +241,7 @@ function createPlaylistElements(gameData) {
         value: ratingsBySongId.has(song.song_id)
           ? ratingsBySongId.get(song.song_id)
           : "",
-        inputmode: "decimal",
+        inputMode: "decimal",
       });
       updateRatingInput(ratingInput, ratingsBySongId, song.song_id, true);
       ratingInput.addEventListener("blur", (event) => {
