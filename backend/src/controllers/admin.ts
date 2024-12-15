@@ -155,7 +155,14 @@ export async function adminBeginGame(req: Request, res: Response) {
       await db.query(
         `UPDATE games
         SET game_status = 'active', invite_code = NULL
-        WHERE admin_code = $1 AND game_status = 'waiting_for_players'`,
+        WHERE
+          admin_code = $1 AND
+          game_status = 'waiting_for_players' AND
+          (
+            SELECT COUNT(*)
+            FROM players AS p
+            WHERE p.game_id = games.game_id
+          ) >= 2`,
         [req.params.admin_code]
       )
     ).rowCount;
@@ -168,7 +175,9 @@ export async function adminBeginGame(req: Request, res: Response) {
     // because the game status isn't 'waiting_for_players'
     if (await gameExists(req.params.admin_code)) {
       return res.status(409).json({
-        message: "Can't begin an active or finished game",
+        message:
+          "Can't begin an active or finished game or a game with less than 2 " +
+          "players",
       });
     }
     return unknownAdminCode(res);

@@ -419,7 +419,9 @@ paths:
         "404":
           description: Unknown 'admin_code' supplied.
         "409":
-          description: Game begin failed because the game status is 'active' or 'finished'.
+          description:
+            Game begin failed because the game status is 'active' or 'finished' or the game has less
+            than 2 players.
         "500":
           description: Internal server error.
 
