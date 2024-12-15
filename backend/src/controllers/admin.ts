@@ -248,14 +248,26 @@ export async function adminRemovePlayer(req: Request, res: Response) {
   try {
     const rowsUpdated = (
       await db.query(
-        `DELETE FROM games
-        WHERE admin_code = $1`,
-        [req.params.admin_code]
+        `DELETE FROM players AS p
+        USING games AS g
+        WHERE
+          p.game_id = g.game_id AND
+          g.admin_code = $1 AND
+          p.player_code = $2`,
+        [req.params.admin_code, req.body.player_code]
       )
     ).rowCount;
 
     if (rowsUpdated) {
       return res.status(201).json({ message: "Player removed successfully" });
+    }
+
+    // if it failed see if it failed because the admin code doesn't exist or
+    // because the player code doesn't exist
+    if (await gameExists(req.params.admin_code)) {
+      return res.status(409).json({
+        message: "Unknown player code",
+      });
     }
     return unknownAdminCode(res);
   } catch (err) {
