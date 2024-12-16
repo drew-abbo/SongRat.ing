@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>SongRat.ing: New Game</title>
+    <title>SongRat.ing: Admin</title>
 
     <link rel="icon" href="/assets/icons/favicon.ico" type="image/x-icon" />
     <link
@@ -41,7 +41,7 @@
     <meta name="theme-color" content="#729b79" />
 
     <link rel="stylesheet" href="assets/styles.css" />
-    <link rel="stylesheet" href="assets/new_game/styles.css" />
+    <link rel="stylesheet" href="assets/admin/styles.css" />
     <script src="assets/script.js"></script>
   </head>
   <body>
@@ -50,40 +50,28 @@
     </script>
 
     <div class="content">
-      <h1 id="header">Create New Game</h1>
+      <p id="loading-msg">loading...</p>
 
-      <label for="game-name" class="required-label">Game Name</label>
-      <input
-        id="game-name"
-        type="text"
-        placeholder="e.g. My Game"
-        maxlength="255"
-        required
-      />
+      <h1 id="header" class="dynamic-content">Administrate Game</h1>
 
-      <label for="game-description">Game Description</label>
-      <textarea
-        id="game-description"
-        placeholder="e.g. The rules of this game are..."
-        maxlength="2500"
-      ></textarea>
+      <p id="error-message" class="dynamic-content"></p>
 
-      <label for="song-count-inputs">Songs Per Playlist</label>
-      <div id="song-count-inputs" class="row-of-items">
-        <input id="min-songs" type="number" placeholder="min" />
-        <input id="max-songs" type="number" placeholder="max" />
+      <div id="game-name-status-and-codes" class="dynamic-content">
+        <h2 id="game-name"></h2>
+
+        <h3 id="game-status"></h3>
+        <p id="invite-code-label" class="copy-code-button-label">Invite Code</p>
+        <button id="invite-code" class="copy-code-button"></button>
+
+        <p id="admin-code-label" class="copy-code-button-label">Admin Code</p>
+        <button id="admin-code" class="copy-code-button"></button>
       </div>
 
-      <label for="require-playlist-link" id="require-playlist-link-label">
-        <p>Require Playlist Link</p>
-        <input id="require-playlist-link" type="checkbox" checked />
-      </label>
+      <div id="game-info" class="dynamic-content"></div>
 
-      <p id="invalid-input-reason"></p>
-
-      <button id="create-button">Create</button>
+      <div id="playlists" class="dynamic-content"></div>
     </div>
 
-    <script src="assets/new_game/script.js"></script>
+    <script src="assets/admin/script.js"></script>
   </body>
 </html>

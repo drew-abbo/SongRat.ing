@@ -32,7 +32,6 @@ async function enterCodeSubmit() {
   }
 
   // validate code with backend
-  let codeIsValid = false;
   try {
     const [status, resJson] = await sendRequest(
       "GET",
@@ -65,7 +64,7 @@ async function enterCodeSubmit() {
   } else if (code[0] === "P") {
     window.location.href = `/player?player_code=${code}`;
   } else {
-    alert("Admin code entered...");
+    window.location.href = `/admin?admin_code=${code}`;
   }
 }
 

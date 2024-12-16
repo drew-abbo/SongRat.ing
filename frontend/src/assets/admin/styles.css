@@ -1,0 +1,114 @@
+.content {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+#header {
+  margin-bottom: 20px;
+}
+
+#error-message {
+  color: var(--color-error);
+  margin: 0 20px;
+  margin-bottom: 10px;
+  min-height: 40px;
+}
+
+.dynamic-content {
+  visibility: hidden; /* start invisible */
+}
+
+.content h1,
+h2,
+p {
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+}
+
+#game-name-status-and-codes {
+  margin: 10px;
+  padding: 10px 25px;
+  border-radius: 25px;
+  border: 5px solid var(--accent-color-2);
+  background-color: var(--color-white);
+  color: var(--color-black);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  width: 70%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#game-name-status-and-codes * {
+  text-shadow: none;
+}
+#game-name {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+#game-status {
+  margin: 0;
+  text-align: center;
+}
+.copy-code-button {
+  background-color: var(--accent-color-2);
+  color: var(--color-black);
+  border-radius: 10px;
+  margin: 0;
+  padding: 10px;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  font-family: var(--site-font-mono);
+}
+.copy-code-button:hover {
+  background-color: var(--accent-color-1);
+}
+.copy-code-button::after {
+  content: "Copied";
+  font-family: var(--site-font);
+  text-align: center;
+  z-index: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  bottom: 30px;
+  padding: 10px;
+  background-color: var(--color-white);
+  border-radius: 10px;
+  border: 2px solid var(--accent-color-1);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0s 0.5s;
+}
+.copy-code-button.show-copied::after {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s ease, visibility 0s 0s;
+}
+.copy-code-button-label {
+  margin: 0;
+}
+
+.content hr {
+  border: 1px solid var(--accent-color-1);
+}
+
+#playlists {
+  margin-bottom: 50vh;
+  width: calc(70% + 60px);
+  max-width: 660px;
+}

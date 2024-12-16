@@ -92,7 +92,10 @@ document.getElementById("create-button").addEventListener("click", () => {
 
   sendRequest("POST", "/api/game/new", requestJson)
     .then(([status, resJson]) => {
-      alert(JSON.stringify(resJson));
+      // save new admin code as last used so it autofills next time
+      localStorage.setItem("lastUsedCode", resJson.admin_code);
+
+      window.location.href = `/admin?admin_code=${resJson.admin_code}`;
     })
     .catch((err) => {
       setInvalidInputReason(err.message);
