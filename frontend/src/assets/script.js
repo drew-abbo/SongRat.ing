@@ -11,7 +11,7 @@
  *
  * @example
  * someDiv.appendChild(
- *   newElement("a", "important-link", {
+ *   newElement("a", ["important-link"], {
  *     href: "https://google.com",
  *     target: "_blank",
  *     rel: "noopener noreferrer",
