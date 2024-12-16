@@ -55,8 +55,7 @@ let gameData;
       if (inviteCode) {
         document.getElementById("invite-code").innerText = inviteCode;
       } else {
-        document.getElementById("invite-code-label").remove();
-        document.getElementById("invite-code").remove();
+        document.getElementById("invite-code-copy-card").remove();
       }
 
       document.getElementById("game-status").innerText =
