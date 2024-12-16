@@ -488,7 +488,9 @@ paths:
         "404":
           description: Unknown 'admin_code' supplied.
         "409":
-          description: Unknown 'player_code' supplied.
+          description:
+            Unknown 'player_code' supplied or removal would result in less than 2 players being in
+            an active or finished game.
         "500":
           description: Internal server error.
 

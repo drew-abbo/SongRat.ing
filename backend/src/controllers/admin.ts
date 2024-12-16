@@ -248,12 +248,20 @@ export async function adminRemovePlayer(req: Request, res: Response) {
   try {
     const rowsUpdated = (
       await db.query(
-        `DELETE FROM players AS p
+        `DELETE FROM players AS p1
         USING games AS g
         WHERE
-          p.game_id = g.game_id AND
+          p1.game_id = g.game_id AND
           g.admin_code = $1 AND
-          p.player_code = $2`,
+          p1.player_code = $2 AND
+          (
+            g.game_status = 'waiting_for_players' OR
+            (
+              SELECT COUNT(*)
+              FROM players AS p2
+              WHERE p2.game_id = g.game_id
+            ) > 2
+          )`,
         [req.params.admin_code, req.body.player_code]
       )
     ).rowCount;
@@ -266,7 +274,9 @@ export async function adminRemovePlayer(req: Request, res: Response) {
     // because the player code doesn't exist
     if (await gameExists(req.params.admin_code)) {
       return res.status(409).json({
-        message: "Unknown player code",
+        message:
+          "Unknown player code or removal would result in less than 2 " +
+          "players being in an active or finished game",
       });
     }
     return unknownAdminCode(res);
