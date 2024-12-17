@@ -450,6 +450,26 @@ let gameData;
         initializeSongTable(resJson);
       }
 
+      // THIS IS A TEMPORARY CHANGE TO HELP WITH DEVELOPMENT
+      // add a list of players and player codes to the top of the screen
+      document.querySelector(".content").prepend(
+        newElement(
+          "div",
+          [],
+          {
+            style: "text-align: left; max-width: 90%",
+          },
+          resJson.players.map((player) =>
+            newElement("p", [], {
+              innerText: player.player_name + " - " + player.player_code,
+              style:
+                "color: red; white-space: nowrap; overflow: hidden; " +
+                "text-overflow: ellipsis;",
+            })
+          )
+        )
+      );
+
       gameData = resJson;
       makeDynamicElementsVisible();
     })
