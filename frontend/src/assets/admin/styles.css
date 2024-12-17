@@ -122,11 +122,12 @@ p {
 }
 
 .content .table-card {
-  margin-top: 25px;
+  margin-top: 10px;
   padding-bottom: 10px;
-  border-radius: 10px;
-  max-width: calc(70% + 40px);
-  min-width: calc(70% + 40px);
+  border-radius: 25px;
+  border: 5px solid var(--accent-color-2);
+  max-width: calc(70% + 50px);
+  min-width: calc(70% + 50px);
   background-color: var(--color-white);
   overflow: hidden;
   color: var(--color-black);
