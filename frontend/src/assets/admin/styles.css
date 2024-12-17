@@ -126,6 +126,7 @@ p {
   padding-bottom: 10px;
   border-radius: 10px;
   max-width: calc(70% + 40px);
+  min-width: calc(70% + 40px);
   background-color: var(--color-white);
   overflow: hidden;
   color: var(--color-black);
