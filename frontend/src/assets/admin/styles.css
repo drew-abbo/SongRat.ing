@@ -219,6 +219,7 @@ p {
 }
 .content .table-card .column-checkbox-item.on {
   background-color: var(--accent-color-2);
+  font-weight: bold;
 }
 .content .table-card .column-checkbox-item.off:hover {
   background-color: var(--accent-color-2);
