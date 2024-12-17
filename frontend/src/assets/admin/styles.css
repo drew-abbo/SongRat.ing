@@ -121,8 +121,113 @@ p {
   border: 1px solid var(--accent-color-1);
 }
 
-#playlists {
+.content .table-card {
+  margin-top: 25px;
+  padding-bottom: 10px;
+  border-radius: 10px;
+  max-width: calc(70% + 40px);
+  background-color: var(--color-white);
+  overflow: hidden;
+  color: var(--color-black);
+}
+.content .table-card * {
+  text-shadow: none;
+  box-shadow: none;
+}
+.content .table-card .table-scroll-container {
+  overflow-x: auto;
+}
+.content table {
+  overflow: hidden;
+  border-collapse: collapse;
+  min-width: 100%;
+}
+.content table thead {
+  background-color: var(--accent-color-2);
+  min-width: 100%;
+  border-bottom: 10px solid var(--color-white);
+}
+.content table tbody {
+  background-color: var(--color-white);
+}
+.content table td {
+  text-align: left;
+  padding: 2px 10px;
+}
+.content table td:not(:last-child) {
+  border-right: 2px solid var(--accent-color-1);
+}
+.content table th {
+  text-align: left;
+  padding: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--site-font);
+}
+.content table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--site-font-mono);
+}
+.content table th:hover {
+  background-color: var(--accent-color-1);
+}
+.content th.table-column-width-thin {
+  min-width: 50px;
+  max-width: 100px;
+}
+.content td.table-column-width-thin {
+  max-width: 50px;
+}
+.content th.table-column-width-medium {
+  min-width: 100px;
+  max-width: 200px;
+}
+.content td.table-column-width-medium {
+  max-width: 100px;
+}
+.content th.table-column-width-wide {
+  min-width: 150px;
+  max-width: 300px;
+}
+.content td.table-column-width-wide {
+  max-width: 150px;
+}
+
+.content .table-card hr {
+  margin: 10px;
+}
+
+.content .table-card .column-checkbox-items {
+  margin: 0 10px;
+  width: calc(100% - 20px);
+  justify-content: space-between;
+  display: flex;
+  flex-wrap: wrap;
+}
+.content .table-card .column-checkbox-item {
+  flex: 1 1 25%;
+  margin: 5px;
+  padding: 5px 5px 5px 0;
+  border-radius: 5px;
+  border: none;
+}
+.content .table-card .column-checkbox-item.off {
+  background-color: var(--accent-color-1);
+}
+.content .table-card .column-checkbox-item.on {
+  background-color: var(--accent-color-2);
+}
+.content .table-card .column-checkbox-item.off:hover {
+  background-color: var(--accent-color-2);
+}
+.content .table-card .column-checkbox-item.on:hover {
+  background-color: var(--accent-color-1);
+}
+
+.content #need-more-data-msg {
+  margin-top: 40px;
   margin-bottom: 50vh;
-  width: calc(70% + 60px);
-  max-width: 660px;
 }
