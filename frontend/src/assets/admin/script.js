@@ -483,8 +483,7 @@ let gameData;
 
       // remove error message text box since we're not going to call
       // displayErrorScreen() from here
-      // RE-ADD THIS:
-      // document.getElementById("error-message").remove();
+      document.getElementById("error-message").remove();
 
       // don't render tables if there are no players
       const noPlayers = resJson.players.length === 0;
