@@ -260,7 +260,6 @@ function getSongsTableColumns(gameData) {
 
 function initializeSongTable(gameData) {
   const [columnInfo, columnData] = getSongsTableColumns(gameData);
-  const rowData = matrixTranspose(columnData);
 
   const songsTableCard = document.getElementById("songs-table-card");
 
@@ -323,27 +322,84 @@ function initializeSongTable(gameData) {
   );
 
   const songsTable = newElement("table");
+  let orderBy = "index";
+  let orderByReversed = false;
 
   renderSongsTable = () => {
     songsTable.innerHTML = "";
 
     // table heading
+    const headingElements = columnInfo
+      .filter((column) => column.render)
+      .map((column) => {
+        const ret = newElement("th", ["table-column-width-" + column.width], {
+          innerText: column.name,
+        });
+
+        ret.addEventListener("click", (event) => {
+          if (orderBy === column.id) {
+            if (!orderByReversed) {
+              orderByReversed = true;
+            } else {
+              orderBy = "index";
+              orderByReversed = false;
+            }
+          } else {
+            orderBy = column.id;
+            orderByReversed = false;
+          }
+          renderSongsTable();
+        });
+
+        return ret;
+      });
     songsTable.appendChild(
-      newElement("thead", [], {}, [
-        newElement(
-          "tr",
-          [],
-          {},
-          columnInfo
-            .filter((column) => column.render)
-            .map((column) =>
-              newElement("th", ["table-column-width-" + column.width], {
-                innerText: column.name,
-              })
-            )
-        ),
-      ])
+      newElement("thead", [], {}, [newElement("tr", [], {}, headingElements)])
     );
+
+    // create row data and reorder it
+    const rowData = matrixTranspose(columnData);
+
+    const orderByColumnIndex = columnInfo.findIndex(
+      (column) => column.id === orderBy
+    );
+    rowData.sort((rowA, rowB) =>
+      ((a, b) => {
+        // null/undefined values should never come before actual values, so they
+        // need to be put at the front if we're going to reverse the array
+        if (a === null) {
+          return a === b ? 0 : orderByReversed ? -1 : 1;
+        }
+        if (b === null) {
+          return orderByReversed ? 1 : -1;
+        }
+
+        // if the 2 types don't match and aren't either numbers or strings then
+        // just don't change the order
+        if (typeof a !== typeof b || !["number", "string"].includes(typeof a)) {
+          return 0;
+        }
+
+        if (typeof a === "number") {
+          return a - b;
+        }
+
+        // string sorting is case insensitive, but prioritizes upper case for
+        // tiebreakers
+        const caseInsensitive = a.toLowerCase().localeCompare(b.toLowerCase());
+        if (caseInsensitive !== 0) return caseInsensitive;
+        return a.localeCompare(b, undefined, { caseFirst: "upper" });
+      })(rowA[orderByColumnIndex], rowB[orderByColumnIndex])
+    );
+
+    // update the row indices because any reordering screwed it up for sure
+    for (let i = 0; i < rowData.length; i++) {
+      rowData[i][0] = i + 1;
+    }
+
+    if (orderByReversed) {
+      rowData.reverse();
+    }
 
     // table data
     songsTable.appendChild(
@@ -383,17 +439,6 @@ function initializeSongTable(gameData) {
   ].forEach((element) => songsTableCard.appendChild(element));
 
   renderSongsTable();
-}
-
-function renderSongDataTable(gameData) {
-  const playerNames = gameData.players.map((player) => player.player_name);
-
-  const songsTableCard = document.getElementById("songs-table-card");
-
-  const songsTable = newElement("table");
-  songsTableCard.appendChild(
-    newElement("div", ["table-scroll-container"], {}, [songsTable])
-  );
 }
 
 const adminCode = new URLSearchParams(window.location.search).get("admin_code");

@@ -166,6 +166,7 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: var(--site-font);
+  cursor: pointer;
 }
 .content table td {
   white-space: nowrap;
@@ -215,6 +216,7 @@ p {
   padding: 5px 5px 5px 0;
   border-radius: 5px;
   border: none;
+  cursor: pointer;
 }
 .content .table-card .column-checkbox-item.off {
   background-color: var(--accent-color-1);
