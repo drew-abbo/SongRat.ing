@@ -595,22 +595,67 @@ let gameData;
         return;
       }
 
-      // set game name and admin code
-      document.getElementById("game-name").innerText = resJson.game_name;
-      document.getElementById("admin-code").innerText = adminCode;
-
-      // set game status and (optionally) invite code
       const inviteCode = resJson.invite_code;
-      if (inviteCode) {
-        document.getElementById("invite-code").innerText = inviteCode;
-      } else {
-        document.getElementById("invite-code-copy-card").remove();
-      }
-
-      document.getElementById("game-status").innerText =
-        "this game is " + resJson.game_status.replace(/_/g, " ");
 
       components.game_info(document.getElementById("game-info"), resJson);
+
+      // add more game info
+      [
+        newElement(
+          "h3",
+          [],
+          {
+            id: "game-status",
+            innerText: "this game is " + resJson.game_status.replace(/_/g, " "),
+          },
+          []
+        ),
+        newElement("div", [], { id: "copy-code-cards" }, [
+          // invite code
+          ...(inviteCode
+            ? [
+                newElement(
+                  "div",
+                  ["copy-code-card"],
+                  { id: "invite-code-copy-card" },
+                  [
+                    newElement("p", ["copy-code-button-label"], {
+                      id: "invite-code-label",
+                      innerText: "Invite Code",
+                    }),
+                    giveButtonCopyCodeCallback(
+                      newElement("button", ["copy-code-button"], {
+                        id: "invite-code",
+                        innerText: inviteCode,
+                      })
+                    ),
+                  ]
+                ),
+              ]
+            : []),
+
+          // admin code
+          newElement(
+            "div",
+            ["copy-code-card"],
+            { id: "admin-code-copy-card" },
+            [
+              newElement("p", ["copy-code-button-label"], {
+                id: "admin-code-label",
+                innerText: "Admin Code",
+              }),
+              giveButtonCopyCodeCallback(
+                newElement("button", ["copy-code-button"], {
+                  id: "admin-code",
+                  innerText: adminCode,
+                })
+              ),
+            ]
+          ),
+        ]),
+      ].forEach((elem) => {
+        document.getElementById("game-info").appendChild(elem);
+      });
 
       // remove error message text box since we're not going to call
       // displayErrorScreen() from here
@@ -653,9 +698,9 @@ let gameData;
     });
 })();
 
-// when the user clicks to copy their admin code
-document.querySelectorAll(".copy-code-button").forEach((elem) =>
-  elem?.addEventListener("click", async function (event) {
+// when the user clicks to copy their code
+function giveButtonCopyCodeCallback(elem) {
+  elem.addEventListener("click", async function (event) {
     await navigator.clipboard.writeText(event.target.innerText);
 
     // make "copied" appear above the button for 1.5 seconds
@@ -665,5 +710,6 @@ document.querySelectorAll(".copy-code-button").forEach((elem) =>
       if (this.mostRecentClick === event)
         event.target.classList.remove("show-copied");
     }, 1500);
-  })
-);
+  });
+  return elem;
+}
