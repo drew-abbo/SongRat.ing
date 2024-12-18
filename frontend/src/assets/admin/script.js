@@ -202,10 +202,34 @@ function getSongsTableColumns(gameData) {
 
   // set some rules about each column
   const columnInfo = [
-    { id: "index", name: "#", width: "thin", render: true },
-    { id: "owner", name: "Owner", width: "medium", render: true },
-    { id: "title", name: "Title", width: "wide", render: true },
-    { id: "artist", name: "Artist", width: "wide", render: true },
+    {
+      id: "index",
+      name: "#",
+      width: "thin",
+      renderMode: "default",
+      render: true,
+    },
+    {
+      id: "owner",
+      name: "Owner",
+      width: "medium",
+      renderMode: "playerName",
+      render: true,
+    },
+    {
+      id: "title",
+      name: "Title",
+      width: "wide",
+      renderMode: "default",
+      render: true,
+    },
+    {
+      id: "artist",
+      name: "Artist",
+      width: "wide",
+      renderMode: "default",
+      render: true,
+    },
 
     // insert a column for each player's ratings
     ...playerNames.map((playerName) => {
@@ -213,18 +237,67 @@ function getSongsTableColumns(gameData) {
         id: "player:" + playerName,
         name: playerName,
         width: "thin",
+        renderMode: "range0_10",
         render: true,
       };
     }),
 
-    { id: "average", name: "Avg.", width: "thin", render: true },
-    { id: "median", name: "Median", width: "thin", render: false },
-    { id: "stdev", name: "Std. Dev.", width: "thin", render: false },
-    { id: "mode", name: "Mode", width: "thin", render: false },
-    { id: "min", name: "Min.", width: "thin", render: false },
-    { id: "max", name: "Max.", width: "thin", render: false },
-    { id: "minFrom", name: "Min. From", width: "medium", render: false },
-    { id: "maxFrom", name: "Max. From", width: "medium", render: false },
+    {
+      id: "average",
+      name: "Avg.",
+      width: "thin",
+      renderMode: "range0_10",
+      render: true,
+    },
+    {
+      id: "median",
+      name: "Median",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "stdev",
+      name: "Std. Dev.",
+      width: "thin",
+      renderMode: "default",
+      render: false,
+    },
+    {
+      id: "mode",
+      name: "Mode",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "min",
+      name: "Min.",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "max",
+      name: "Max.",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "minFrom",
+      name: "Min. From",
+      width: "medium",
+      renderMode: "playerName",
+      render: false,
+    },
+    {
+      id: "maxFrom",
+      name: "Max. From",
+      width: "medium",
+      renderMode: "playerName",
+      render: false,
+    },
   ];
 
   // this matrix is an array of columns
@@ -256,6 +329,43 @@ function getSongsTableColumns(gameData) {
   ];
 
   return [columnInfo, columnData];
+}
+
+const allPlayerColors = [
+  "#bbebb2",
+  "#b2ebde",
+  "#b2caeb",
+  "#ebb2df",
+  "#d0b2eb",
+  "#ebb2b2",
+  "#e5ebb2",
+];
+const colorsByPlayer = new Map();
+function renderModeToColor(cellValue, renderMode) {
+  const defaultColor = "var(--color-white)";
+
+  if (renderMode === "playerName") {
+    if (!cellValue) {
+      return defaultColor;
+    }
+    let ret = colorsByPlayer.get(cellValue);
+    if (!ret) {
+      ret = allPlayerColors.shift();
+      allPlayerColors.push(ret);
+      colorsByPlayer.set(cellValue, ret);
+    }
+    return ret;
+  }
+
+  if (renderMode === "range0_10") {
+    return colorFromRatingStr(String(cellValue), defaultColor);
+  }
+
+  if (renderMode !== "default") {
+    console.error(`Unknown render mode ${renderMode}`);
+  }
+
+  return defaultColor;
 }
 
 function initializeSongTable(gameData) {
@@ -423,6 +533,10 @@ function initializeSongTable(gameData) {
                   ["table-column-width-" + rowItemWithColumnInfo[1].width],
                   {
                     innerText: rowItemWithColumnInfo[0] ?? "-",
+                    style: `background-color: ${renderModeToColor(
+                      rowItemWithColumnInfo[0],
+                      rowItemWithColumnInfo[1].renderMode
+                    )};`,
                   }
                 )
               )

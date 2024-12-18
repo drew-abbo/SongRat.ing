@@ -180,10 +180,10 @@ function stringRepresentsFloat(s) {
  * Get a background color based on an input string that represents a number.
  *
  * @param {string} valueStr A string that may or may not represent a float.
+ * @param {string} badColor The color to return if the string is bad.
  * @returns {string} The CSS color string to be applied based on the value.
  */
-function colorFromRatingStr(valueStr) {
-  const badColor = "#d6d6d6";
+function colorFromRatingStr(valueStr, badColor = "#d6d6d6") {
   const red = { r: 255, g: 216, b: 214 };
   const yellow = { r: 255, g: 241, b: 227 };
   const green = { r: 227, g: 255, b: 227 };
