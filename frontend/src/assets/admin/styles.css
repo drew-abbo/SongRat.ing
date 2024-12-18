@@ -177,6 +177,9 @@ p {
 .content table th:hover {
   background-color: var(--accent-color-1);
 }
+.content table th.player-column-table-header-cell:hover {
+  filter: brightness(1.025) saturate(0.5);
+}
 .content th.table-column-width-thin {
   min-width: 50px;
   max-width: 100px;

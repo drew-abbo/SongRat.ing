@@ -442,9 +442,26 @@ function initializeSongTable(gameData) {
     const headingElements = columnInfo
       .filter((column) => column.render)
       .map((column) => {
-        const ret = newElement("th", ["table-column-width-" + column.width], {
-          innerText: column.name,
-        });
+        const ret = newElement(
+          "th",
+          [
+            "table-column-width-" + column.width,
+            ...(column.id.startsWith("player:")
+              ? ["player-column-table-header-cell"]
+              : []),
+          ],
+          {
+            innerText: column.name,
+            ...(column.id.startsWith("player:")
+              ? {
+                  style: `background-color: ${renderModeToColor(
+                    column.name,
+                    "playerName"
+                  )};`,
+                }
+              : {}),
+          }
+        );
 
         ret.addEventListener("click", (event) => {
           if (orderBy === column.id) {
