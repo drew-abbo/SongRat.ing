@@ -534,13 +534,13 @@ function initializeSongTable(gameData) {
       })(rowA[orderByColumnIndex], rowB[orderByColumnIndex])
     );
 
+    if (orderByReversed) {
+      rowData.reverse();
+    }
+
     // update the row indices because any reordering screwed it up for sure
     for (let i = 0; i < rowData.length; i++) {
       rowData[i][0] = i + 1;
-    }
-
-    if (orderByReversed) {
-      rowData.reverse();
     }
 
     // table data
