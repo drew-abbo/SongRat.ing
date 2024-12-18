@@ -368,6 +368,21 @@ function renderModeToColor(cellValue, renderMode) {
   return defaultColor;
 }
 
+function roundTo2(num) {
+  if (typeof num !== "number") {
+    return num;
+  }
+
+  const numArr = String(num.toFixed(2)).split("");
+  while (numArr.at(-1) == "0") {
+    numArr.pop();
+  }
+  if (numArr.at(-1) === ".") {
+    numArr.pop();
+  }
+  return numArr.join("");
+}
+
 function initializeSongTable(gameData) {
   const [columnInfo, columnData] = getSongsTableColumns(gameData);
 
@@ -549,7 +564,7 @@ function initializeSongTable(gameData) {
                   "td",
                   ["table-column-width-" + rowItemWithColumnInfo[1].width],
                   {
-                    innerText: rowItemWithColumnInfo[0] ?? "-",
+                    innerText: roundTo2(rowItemWithColumnInfo[0]) ?? "-",
                     style: `background-color: ${renderModeToColor(
                       rowItemWithColumnInfo[0],
                       rowItemWithColumnInfo[1].renderMode
