@@ -31,25 +31,6 @@ p {
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
 }
 
-#game-name-status-and-codes {
-  margin: 10px;
-  padding: 10px 25px;
-  border-radius: 25px;
-  border: 5px solid var(--accent-color-2);
-  background-color: var(--color-white);
-  color: var(--color-black);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  width: 70%;
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-#game-name-status-and-codes * {
-  text-shadow: none;
-}
 #copy-code-cards {
   padding: 0;
   margin: 10px 10px 20px 10px;
