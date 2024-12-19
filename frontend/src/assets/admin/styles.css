@@ -33,7 +33,8 @@ p {
 
 #copy-code-cards {
   padding: 0;
-  margin: 10px 0;
+  margin-top: 10px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -123,11 +124,23 @@ p {
   padding-bottom: 10px;
   border-radius: 25px;
   border: 5px solid var(--accent-color-2);
-  max-width: calc(70% + 50px);
-  min-width: calc(70% + 50px);
   background-color: var(--color-white);
   overflow: hidden;
   color: var(--color-black);
+  max-width: calc(70% + 50px);
+  min-width: calc(70% + 50px);
+}
+@media (min-width: 850px) and (max-width: 1000px) {
+  .content .table-card {
+    max-width: calc(2.0333 * 100% - 1133.3px + 50px);
+    min-width: calc(2.0333 * 100% - 1133.3px + 50px);
+  }
+}
+@media (min-width: 1000px) {
+  .content .table-card {
+    max-width: calc(90% + 50px);
+    min-width: calc(90% + 50px);
+  }
 }
 .content .table-card * {
   text-shadow: none;
