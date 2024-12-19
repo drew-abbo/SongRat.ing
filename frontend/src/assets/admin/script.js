@@ -236,7 +236,7 @@ function getSongsTableColumns(gameData) {
         name: playerName,
         width: "thin",
         renderMode: "range0_10",
-        render: true,
+        render: gameData.game_status !== "waiting_for_players",
       };
     }),
 
@@ -245,7 +245,7 @@ function getSongsTableColumns(gameData) {
       name: "Avg.",
       width: "thin",
       renderMode: "range0_10",
-      render: true,
+      render: gameData.game_status !== "waiting_for_players",
     },
     {
       id: "median",
@@ -397,7 +397,10 @@ function initializeSongTable(gameData) {
 
       let ratingsCheckboxItem = newElement(
         "button",
-        ["column-checkbox-item", "on"],
+        [
+          "column-checkbox-item",
+          gameData.game_status !== "waiting_for_players" ? "on" : "off",
+        ],
         { innerText: "Ratings" }
       );
       const playerColumns = [];
@@ -711,7 +714,7 @@ let gameData;
                 "div",
                 [],
                 {
-                  id: "player-code-carousel"
+                  id: "player-code-carousel",
                 },
                 resJson.players.map((player) =>
                   newElement(
