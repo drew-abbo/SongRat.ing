@@ -445,8 +445,11 @@ function initializeSongTable(gameData) {
   );
 
   const songsTable = newElement("table");
+  const songsTableOrderInfo = newElement("p", ["table-order-info"]);
+
   let orderBy = "index";
   let orderByReversed = false;
+  let filterForPlayer = null;
 
   renderSongsTable = () => {
     songsTable.innerHTML = "";
@@ -459,9 +462,7 @@ function initializeSongTable(gameData) {
           "th",
           [
             "table-column-width-" + column.width,
-            ...(column.id.startsWith("player:")
-              ? ["player-column-table-header-cell"]
-              : []),
+            ...(column.id.startsWith("player:") ? ["generic-hover-glow"] : []),
           ],
           {
             innerText: column.name,
@@ -499,6 +500,18 @@ function initializeSongTable(gameData) {
 
     // create row data and reorder it
     const rowData = matrixTranspose(columnData);
+
+    // filter out ratings that aren't from the player we're filtering for (this
+    // assumes that all songs owned by any given player are in consecutive rows)
+    const ownerColumnIndex = 1;
+    if (filterForPlayer) {
+      for (let i = 0; i < rowData.length; i++) {
+        if (rowData[i][ownerColumnIndex] !== filterForPlayer) {
+          rowData.splice(i, 1);
+          i--;
+        }
+      }
+    }
 
     const orderByColumnIndex = columnInfo.findIndex(
       (column) => column.id === orderBy
@@ -557,8 +570,8 @@ function initializeSongTable(gameData) {
               .filter(
                 (rowItemWithColumnInfo) => rowItemWithColumnInfo[1].render
               )
-              .map((rowItemWithColumnInfo) =>
-                newElement(
+              .map((rowItemWithColumnInfo) => {
+                const ret = newElement(
                   "td",
                   ["table-column-width-" + rowItemWithColumnInfo[1].width],
                   {
@@ -568,16 +581,37 @@ function initializeSongTable(gameData) {
                       rowItemWithColumnInfo[1].renderMode
                     )};`,
                   }
-                )
-              )
+                );
+
+                // add the ability to filter by players
+                if (rowItemWithColumnInfo[1].id === "owner") {
+                  ret.classList.add("generic-hover-glow");
+                  ret.addEventListener("click", (event) => {
+                    filterForPlayer =
+                      filterForPlayer === rowItemWithColumnInfo[0]
+                        ? null
+                        : rowItemWithColumnInfo[0];
+                    renderSongsTable();
+                  });
+                }
+
+                return ret;
+              })
           )
         )
       )
     );
+
+    songsTableOrderInfo.innerText =
+      "Ordered by " +
+      orderBy +
+      (orderByReversed ? " (high to low)" : " (low to high)") +
+      (filterForPlayer ? ", filtered for " + filterForPlayer + "'s songs" : "");
   };
 
   [
     newElement("div", ["table-scroll-container"], {}, [songsTable]),
+    songsTableOrderInfo,
     newElement("hr"),
     columnCheckboxItems,
   ].forEach((element) => songsTableCard.appendChild(element));

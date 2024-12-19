@@ -171,9 +171,6 @@ p {
 .content table th:hover {
   background-color: var(--accent-color-1);
 }
-.content table th.player-column-table-header-cell:hover {
-  filter: brightness(1.025) saturate(0.5);
-}
 .content th.table-column-width-thin {
   min-width: 50px;
   max-width: 100px;
@@ -194,6 +191,14 @@ p {
 }
 .content td.table-column-width-wide {
   max-width: 150px;
+}
+.content .table-card .table-order-info {
+  margin: 5px 0 0 10px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: italic;
 }
 
 .content .table-card hr {
@@ -232,4 +237,8 @@ p {
 .content #need-more-data-msg {
   margin-top: 40px;
   margin-bottom: 50vh;
+}
+
+.content .generic-hover-glow:hover {
+  filter: brightness(1.025) saturate(0.5);
 }
