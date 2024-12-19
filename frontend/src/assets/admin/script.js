@@ -649,7 +649,7 @@ let gameData;
       // add more game info
       [
         newElement(
-          "h3",
+          "p",
           [],
           {
             id: "game-status",
@@ -672,7 +672,6 @@ let gameData;
                     }),
                     giveButtonCopyCodeCallback(
                       newElement("button", ["copy-code-button"], {
-                        id: "invite-code",
                         innerText: inviteCode,
                       })
                     ),
@@ -693,13 +692,48 @@ let gameData;
               }),
               giveButtonCopyCodeCallback(
                 newElement("button", ["copy-code-button"], {
-                  id: "admin-code",
                   innerText: adminCode,
                 })
               ),
             ]
           ),
         ]),
+
+        // player names and codes
+        ...(resJson.players.length
+          ? [
+              newElement("hr"),
+              newElement("h3", [], {
+                id: "player-code-carousel-label",
+                innerText: "Player Codes",
+              }),
+              newElement(
+                "div",
+                [],
+                {
+                  id: "player-code-carousel"
+                },
+                resJson.players.map((player) =>
+                  newElement(
+                    "div",
+                    ["copy-code-card"],
+                    { id: "invite-code-copy-card" },
+                    [
+                      newElement("p", ["copy-code-button-label"], {
+                        id: "invite-code-label",
+                        innerText: player.player_name,
+                      }),
+                      giveButtonCopyCodeCallback(
+                        newElement("button", ["copy-code-button"], {
+                          innerText: player.player_code,
+                        })
+                      ),
+                    ]
+                  )
+                )
+              ),
+            ]
+          : []),
       ].forEach((elem) => {
         document.getElementById("game-info").appendChild(elem);
       });
@@ -716,26 +750,6 @@ let gameData;
         document.getElementById("need-more-data-msg").innerText = "";
         initializeSongTable(resJson);
       }
-
-      // THIS IS A TEMPORARY CHANGE TO HELP WITH DEVELOPMENT
-      // add a list of players and player codes to the top of the screen
-      document.querySelector(".content").prepend(
-        newElement(
-          "div",
-          [],
-          {
-            style: "text-align: left; max-width: 90%",
-          },
-          resJson.players.map((player) =>
-            newElement("p", [], {
-              innerText: player.player_name + " - " + player.player_code,
-              style:
-                "color: red; white-space: nowrap; overflow: hidden; " +
-                "text-overflow: ellipsis;",
-            })
-          )
-        )
-      );
 
       gameData = resJson;
       makeDynamicElementsVisible();

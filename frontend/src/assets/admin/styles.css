@@ -33,23 +33,27 @@ p {
 
 #copy-code-cards {
   padding: 0;
-  margin: 10px 10px 20px 10px;
+  margin: 10px 0;
   display: flex;
   flex-direction: row;
-  width: calc(100% - 20px);
+  width: 100%;
   justify-content: center;
+}
+.copy-code-card {
+  margin: 0 10px;
+  max-width: 150px;
+  min-width: 150px;
 }
 @media (max-width: 499px) {
   #copy-code-cards {
     flex-direction: column;
+    align-items: center;
   }
-}
-.copy-code-card {
-  padding: 0 20px;
 }
 #game-status {
   margin: 20px 0 0 0;
   text-align: center;
+  font-weight: bold;
 }
 .copy-code-button {
   background-color: var(--accent-color-2);
@@ -90,6 +94,24 @@ p {
 }
 .copy-code-button-label {
   margin: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#player-code-carousel-label {
+  margin-bottom: 10px;
+}
+
+#player-code-carousel {
+  padding-bottom: 20px;
+  overflow-x: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  width: fit-content;
+  max-width: 100%;
+  justify-self: center;
 }
 
 .content hr {
