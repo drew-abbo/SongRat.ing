@@ -155,45 +155,43 @@ function rowMax(row) {
 }
 
 function rowMinFrom(row, playerNames) {
-  row = rowFilterOutNull(row);
-  if (row.length < 1) {
-    return null;
-  }
-
-  let minFound = row[0];
-  let minCount = 1;
-  let ret = playerNames[0];
-  for (let i = 1; i < row.length; i++) {
-    if (row[i] === minFound) {
-      minCount++;
-    } else if (row[i] < ret) {
-      minFound = row[i];
-      minCount = 1;
-      ret = playerNames[i];
+  let found = null;
+  let foundIndex = null;
+  for (let i = 0; i < row.length; i++) {
+    if (row[i] === null) {
+      continue;
+    }
+    if (found === null) {
+      found = row[i];
+      foundIndex = i;
+    } else if (row[i] === found) {
+      foundIndex = null; // no repeats
+    } else if (row[i] < found) {
+      found = row[i];
+      foundIndex = i;
     }
   }
-  return minCount === 1 ? ret : null;
+  return foundIndex === null ? null : playerNames[foundIndex];
 }
 
 function rowMaxFrom(row, playerNames) {
-  row = rowFilterOutNull(row);
-  if (row.length < 1) {
-    return null;
-  }
-
-  let maxFound = row[0];
-  let maxCount = 1;
-  let ret = playerNames[0];
-  for (let i = 1; i < row.length; i++) {
-    if (row[i] === maxFound) {
-      maxCount++;
-    } else if (row[i] > ret) {
-      maxFound = row[i];
-      maxCount = 1;
-      ret = playerNames[i];
+  let found = null;
+  let foundIndex = null;
+  for (let i = 0; i < row.length; i++) {
+    if (row[i] === null) {
+      continue;
+    }
+    if (found === null) {
+      found = row[i];
+      foundIndex = i;
+    } else if (row[i] === found) {
+      foundIndex = null; // no repeats
+    } else if (row[i] > found) {
+      found = row[i];
+      foundIndex = i;
     }
   }
-  return maxCount === 1 ? ret : null;
+  return foundIndex === null ? null : playerNames[foundIndex];
 }
 
 function getSongsTableColumns(gameData) {
