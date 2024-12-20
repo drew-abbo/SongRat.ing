@@ -57,6 +57,19 @@ function matrixTranspose(matrix) {
   return matrix[0].map((_, colIndex) => matrix.map((row) => row[colIndex]));
 }
 
+function matrixToAllRatingsForPlayer(rowMatrix, songs) {
+  const ret = [];
+  let lastPlayer = null;
+  for (let i = 0; i < rowMatrix.length; i++) {
+    if (songs[i].player_name !== lastPlayer) {
+      ret.push([]);
+      lastPlayer = songs[i].player_name;
+    }
+    ret.at(-1).push(...rowMatrix[i]);
+  }
+  return ret;
+}
+
 function rowFilterOutNull(row) {
   return row.filter((x) => x !== null);
 }
@@ -194,6 +207,21 @@ function rowMaxFrom(row, playerNames) {
   return foundIndex === null ? null : playerNames[foundIndex];
 }
 
+function songsByPlayer(songs) {
+  const ret = new Map();
+  let lastPlayer = null;
+  let lastPlayerArr = null;
+  for (const song of songs) {
+    if (song.player_name !== lastPlayer) {
+      lastPlayer = song.player_name;
+      lastPlayerArr = [];
+      ret.set(lastPlayer, lastPlayerArr);
+    }
+    lastPlayerArr.push(song);
+  }
+  return ret;
+}
+
 function getSongsTableColumns(gameData) {
   const songs = gameData.songs;
   const playerNames = gameData.players.map((player) => player.player_name);
@@ -326,6 +354,200 @@ function getSongsTableColumns(gameData) {
     ratingMatrixT.map((row) => rowMaxFrom(row, playerNames)),
   ];
 
+  return [columnInfo, columnData];
+}
+
+function getPlayersTableColumns(gameData) {
+  const songs = gameData.songs;
+  const playerNames = gameData.players.map((player) => player.player_name);
+
+  // set some rules about each column
+  const columnInfo = [
+    {
+      id: "index",
+      name: "#",
+      width: "thin",
+      renderMode: "default",
+      render: true,
+    },
+    {
+      id: "player",
+      name: "Player",
+      width: "medium",
+      renderMode: "playerName",
+      render: true,
+    },
+    {
+      id: "songCount",
+      name: "Songs",
+      width: "thin",
+      renderMode: "default",
+      render: true,
+    },
+
+    // columns related to ratings received
+    {
+      id: "averageReceived",
+      name: "Avg. Received",
+      width: "thin",
+      renderMode: "range0_10",
+      render: gameData.game_status !== "waiting_for_players",
+    },
+    {
+      id: "medianReceived",
+      name: "Median Received",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "stdevReceived",
+      name: "Std. Dev. Received",
+      width: "thin",
+      renderMode: "default",
+      render: false,
+    },
+    {
+      id: "modeReceived",
+      name: "Mode Received",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "minRatingReceived",
+      name: "Min. Rating Received",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "maxRatingReceived",
+      name: "Max. Rating Received",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "likedMostBy",
+      name: "Liked Most By",
+      width: "medium",
+      renderMode: "playerName",
+      render: false,
+    },
+    {
+      id: "likedLeastBy",
+      name: "Liked Least By",
+      width: "medium",
+      renderMode: "playerName",
+      render: false,
+    },
+
+    // columns related to ratings given
+    {
+      id: "averageGiven",
+      name: "Avg. Given",
+      width: "thin",
+      renderMode: "range0_10",
+      render: gameData.game_status !== "waiting_for_players",
+    },
+    {
+      id: "medianGiven",
+      name: "Median Given",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "stdevGiven",
+      name: "Std. Dev. Given",
+      width: "thin",
+      renderMode: "default",
+      render: false,
+    },
+    {
+      id: "modeGiven",
+      name: "Mode Given",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "minRatingGiven",
+      name: "Min. Rating Given",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "maxRatingGiven",
+      name: "Max. Rating Given",
+      width: "thin",
+      renderMode: "range0_10",
+      render: false,
+    },
+    {
+      id: "favorite",
+      name: "Favorite",
+      width: "medium",
+      renderMode: "playerName",
+      render: false,
+    },
+    {
+      id: "leastFavorite",
+      name: "Least Favorite",
+      width: "medium",
+      renderMode: "playerName",
+      render: false,
+    },
+  ];
+
+  // this matrix is an array of columns
+  const ratingMatrix = createRatingMatrix(gameData);
+
+  // this matrix is an array of rows
+  const ratingMatrixT = matrixTranspose(ratingMatrix);
+
+  // this matrix is an array of rows where each row is all ratings received for
+  // any given player
+  const ratingMatrixTByPlayer = matrixToAllRatingsForPlayer(
+    ratingMatrixT,
+    songs
+  );
+
+  // collect all column data
+  const columnData = [
+    // index, player, songCount
+    Array.from({ length: playerNames.length }, (_, i) => i + 1),
+    [...playerNames],
+    Array.from(songsByPlayer(songs).values()).map((playerSongs) => playerSongs.length),
+
+    // averageReceived, medianReceived, stdevReceived, modeReceived,
+    // minRatingReceived, maxRatingReceived, minRatingReceivedFrom,
+    // maxRatingReceivedFrom, likedMostBy, likedLeastBy
+    ratingMatrixTByPlayer.map((row) => rowAverage(row)),
+    ratingMatrixTByPlayer.map((row) => rowMedian(row)),
+    ratingMatrixTByPlayer.map((row) => rowStdev(row)),
+    ratingMatrixTByPlayer.map((row) => rowMode(row)),
+    ratingMatrixTByPlayer.map((row) => rowMin(row)),
+    ratingMatrixTByPlayer.map((row) => rowMax(row)),
+    playerNames.map(() => "TODO"), // TODO: likedMostBy
+    playerNames.map(() => "TODO"), // TODO: likedLeastBy
+
+    // averageGiven, medianGiven, stdevGiven, modeGiven, minRatingGiven,
+    // maxRatingGiven, minRatingGivenTo, maxRatingGivenTo, favorite,
+    // leastFavorite
+    ratingMatrix.map((column) => rowAverage(column)),
+    ratingMatrix.map((column) => rowMedian(column)),
+    ratingMatrix.map((column) => rowStdev(column)),
+    ratingMatrix.map((column) => rowMode(column)),
+    ratingMatrix.map((column) => rowMin(column)),
+    ratingMatrix.map((column) => rowMax(column)),
+    playerNames.map(() => "TODO"), // TODO: favorite
+    playerNames.map(() => "TODO"), // TODO: leastFavorite
+  ];
+
+  console.log(columnData);
   return [columnInfo, columnData];
 }
 
@@ -622,6 +844,176 @@ function initializeSongTable(gameData) {
   renderSongsTable();
 }
 
+function initializePlayerTable(gameData) {
+  const [columnInfo, columnData] = getPlayersTableColumns(gameData);
+
+  const playersTableCard = document.getElementById("players-table-card");
+
+  let renderPlayersTable;
+
+  const columnCheckboxItems = newElement(
+    "div",
+    ["column-checkbox-items"],
+    {},
+    (() => {
+      const ret = [];
+
+      for (const column of columnInfo) {
+        // can't toggle the index column
+        if (column.id === "index") {
+          continue;
+        }
+
+        const columnCheckboxItem = newElement(
+          "button",
+          ["column-checkbox-item", column.render ? "on" : "off"],
+          { innerText: column.name }
+        );
+        columnCheckboxItem.addEventListener("click", (event) => {
+          event.target.classList.toggle("on");
+          event.target.classList.toggle("off");
+          column.render = !column.render;
+          renderPlayersTable();
+        });
+        ret.push(columnCheckboxItem);
+      }
+
+      return ret;
+    })()
+  );
+
+  const playersTable = newElement("table");
+  const playersTableOrderInfo = newElement("p", ["table-order-info"]);
+
+  let orderBy = "index";
+  let orderByReversed = false;
+
+  renderPlayersTable = () => {
+    playersTable.innerHTML = "";
+
+    // table heading
+    const headingElements = columnInfo
+      .filter((column) => column.render)
+      .map((column) => {
+        const ret = newElement("th", ["table-column-width-" + column.width], {
+          innerText: column.name,
+        });
+
+        ret.addEventListener("click", (event) => {
+          if (orderBy === column.id) {
+            if (!orderByReversed) {
+              orderByReversed = true;
+            } else {
+              orderBy = "index";
+              orderByReversed = false;
+            }
+          } else {
+            orderBy = column.id;
+            orderByReversed = false;
+          }
+          renderPlayersTable();
+        });
+
+        return ret;
+      });
+    playersTable.appendChild(
+      newElement("thead", [], {}, [newElement("tr", [], {}, headingElements)])
+    );
+
+    // create row data and reorder it
+    const rowData = matrixTranspose(columnData);
+
+    const orderByColumnIndex = columnInfo.findIndex(
+      (column) => column.id === orderBy
+    );
+    rowData.sort((rowA, rowB) =>
+      ((a, b) => {
+        // null/undefined values should never come before actual values, so they
+        // need to be put at the front if we're going to reverse the array
+        if (a === null) {
+          return a === b ? 0 : orderByReversed ? -1 : 1;
+        }
+        if (b === null) {
+          return orderByReversed ? 1 : -1;
+        }
+
+        // if the 2 types don't match and aren't either numbers or strings then
+        // just don't change the order
+        if (typeof a !== typeof b || !["number", "string"].includes(typeof a)) {
+          return 0;
+        }
+
+        if (typeof a === "number") {
+          return a - b;
+        }
+
+        // string sorting is case insensitive, but prioritizes upper case for
+        // tiebreakers
+        const caseInsensitive = a.toLowerCase().localeCompare(b.toLowerCase());
+        if (caseInsensitive !== 0) return caseInsensitive;
+        return a.localeCompare(b, undefined, { caseFirst: "upper" });
+      })(rowA[orderByColumnIndex], rowB[orderByColumnIndex])
+    );
+
+    if (orderByReversed) {
+      rowData.reverse();
+    }
+
+    // update the row indices because any reordering screwed it up for sure
+    for (let i = 0; i < rowData.length; i++) {
+      rowData[i][0] = i + 1;
+    }
+
+    // table data
+    playersTable.appendChild(
+      newElement(
+        "tbody",
+        [],
+        {},
+        rowData.map((row) =>
+          newElement(
+            "tr",
+            [],
+            {},
+            row
+              .map((rowItem, columnIndex) => [rowItem, columnInfo[columnIndex]])
+              .filter(
+                (rowItemWithColumnInfo) => rowItemWithColumnInfo[1].render
+              )
+              .map((rowItemWithColumnInfo) =>
+                newElement(
+                  "td",
+                  ["table-column-width-" + rowItemWithColumnInfo[1].width],
+                  {
+                    innerText: roundTo2(rowItemWithColumnInfo[0]) ?? "-",
+                    style: `background-color: ${renderModeToColor(
+                      rowItemWithColumnInfo[0],
+                      rowItemWithColumnInfo[1].renderMode
+                    )};`,
+                  }
+                )
+              )
+          )
+        )
+      )
+    );
+
+    playersTableOrderInfo.innerText =
+      "Ordered by " +
+      orderBy +
+      (orderByReversed ? " (high to low)" : " (low to high)");
+  };
+
+  [
+    newElement("div", ["table-scroll-container"], {}, [playersTable]),
+    playersTableOrderInfo,
+    newElement("hr"),
+    columnCheckboxItems,
+  ].forEach((element) => playersTableCard.appendChild(element));
+
+  renderPlayersTable();
+}
+
 function createGameNextStepElement(gameData) {
   let buttonText;
   let buttonConfirmationMsg;
@@ -814,18 +1206,20 @@ let gameData;
         document.getElementById("game-info").appendChild(elem);
       });
 
-      // remove error message text box since we're not going to call
-      // displayErrorScreen() from here
-      document.getElementById("error-message").remove();
-
       // don't render tables if there are no players
       const noPlayers = resJson.players.length === 0;
       if (noPlayers) {
         document.getElementById("songs-table-card").remove();
+        document.getElementById("players-table-card").remove();
       } else {
         document.getElementById("need-more-data-msg").innerText = "";
         initializeSongTable(resJson);
+        initializePlayerTable(resJson);
       }
+
+      // remove error message text box since we're not going to call
+      // displayErrorScreen() from here
+      document.getElementById("error-message").remove();
 
       gameData = resJson;
       makeDynamicElementsVisible();
