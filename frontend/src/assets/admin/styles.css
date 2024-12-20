@@ -103,7 +103,12 @@ p {
 #player-code-carousel-label {
   margin-bottom: 10px;
 }
-
+#player-code-carousel-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 #player-code-carousel {
   padding-bottom: 20px;
   overflow-x: auto;
@@ -112,7 +117,6 @@ p {
   justify-content: left;
   width: fit-content;
   max-width: 100%;
-  justify-self: center;
 }
 
 .content .game-next-step-element {

@@ -773,26 +773,35 @@ let gameData;
                 "div",
                 [],
                 {
-                  id: "player-code-carousel",
+                  id: "player-code-carousel-container",
                 },
-                resJson.players.map((player) =>
+                [
                   newElement(
                     "div",
-                    ["copy-code-card"],
-                    { id: "invite-code-copy-card" },
-                    [
-                      newElement("p", ["copy-code-button-label"], {
-                        id: "invite-code-label",
-                        innerText: player.player_name,
-                      }),
-                      giveButtonCopyCodeCallback(
-                        newElement("button", ["copy-code-button"], {
-                          innerText: player.player_code,
-                        })
-                      ),
-                    ]
-                  )
-                )
+                    [],
+                    {
+                      id: "player-code-carousel",
+                    },
+                    resJson.players.map((player) =>
+                      newElement(
+                        "div",
+                        ["copy-code-card"],
+                        { id: "invite-code-copy-card" },
+                        [
+                          newElement("p", ["copy-code-button-label"], {
+                            id: "invite-code-label",
+                            innerText: player.player_name,
+                          }),
+                          giveButtonCopyCodeCallback(
+                            newElement("button", ["copy-code-button"], {
+                              innerText: player.player_code,
+                            })
+                          ),
+                        ]
+                      )
+                    )
+                  ),
+                ]
               ),
             ]
           : []),
