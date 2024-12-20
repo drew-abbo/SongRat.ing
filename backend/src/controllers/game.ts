@@ -73,7 +73,7 @@ export async function createGame(req: Request, res: Response) {
 
   return res.status(201).json({
     admin_code: adminCode,
-    inviteCode: inviteCode,
+    invite_code: inviteCode,
   });
 }
 
