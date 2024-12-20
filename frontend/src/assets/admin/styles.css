@@ -251,6 +251,7 @@ p {
   justify-content: space-between;
   display: flex;
   flex-wrap: wrap;
+  color: var(--color-black);
 }
 .content .table-card .column-checkbox-item {
   flex: 1 1 25%;
