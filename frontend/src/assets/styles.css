@@ -23,6 +23,14 @@ body {
   height: 100vh;
 }
 
+/* safari automatically makes button text blue for some reason */
+button {
+  color: var(--color-black);
+}
+select {
+  color: var(--color-black);
+}
+
 /* top navigation bar */
 .top-nav-bar {
   background-color: var(--accent-color-2);
