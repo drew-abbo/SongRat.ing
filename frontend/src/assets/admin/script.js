@@ -622,6 +622,65 @@ function initializeSongTable(gameData) {
   renderSongsTable();
 }
 
+function createGameNextStepElement(gameData) {
+  let buttonText;
+  let buttonConfirmationMsg;
+  let buttonRequestURL;
+
+  if (gameData.game_status === "waiting_for_players") {
+    const playersStillNeeded = 2 - gameData.players.length;
+    if (playersStillNeeded > 0) {
+      return newElement("h3", ["game-next-step-element"], {
+        innerText:
+          `You need ${playersStillNeeded} more player` +
+          (playersStillNeeded > 1 ? "s" : "") +
+          " to start this game...",
+      });
+    }
+
+    buttonText = "Start Game...";
+    buttonConfirmationMsg =
+      "Starting a game locks in all players and their songs.";
+    buttonRequestURL = `/api/admin/begin/${adminCode}`;
+  } else {
+    const ratingPercentCompletion =
+      (gameData.ratings.length /
+        (gameData.players.length * gameData.songs.length -
+          gameData.songs.length)) *
+      100;
+
+    if (ratingPercentCompletion !== 100) {
+      return newElement("h3", ["game-next-step-element"], {
+        innerText: `Songs are ${roundTo2(ratingPercentCompletion)}% rated.`,
+      });
+    }
+
+    buttonText = "End Game...";
+    buttonConfirmationMsg = "Ending a game locks in all ratings.";
+    buttonRequestURL = `/api/admin/end/${adminCode}`;
+  }
+
+  const ret = newElement("button", ["game-next-step-element"], {
+    innerText: buttonText,
+  });
+  ret.addEventListener("click", (event) => {
+    if (!confirm(buttonConfirmationMsg)) {
+      return;
+    }
+    event.target.disabled = true;
+
+    sendRequest("POST", buttonRequestURL)
+      .then(() => {
+        location.reload();
+      })
+      .catch((err) => {
+        alert("The game state couldn't be changed: " + err.message);
+        event.target.disabled = false;
+      });
+  });
+  return ret;
+}
+
 const adminCode = new URLSearchParams(window.location.search).get("admin_code");
 
 // generate the dynamic content from the admin_code parameter in the url
@@ -736,6 +795,11 @@ let gameData;
                 )
               ),
             ]
+          : []),
+
+        // start/end game info/buttons
+        ...(resJson.game_status !== "finished"
+          ? [createGameNextStepElement(resJson)]
           : []),
       ].forEach((elem) => {
         document.getElementById("game-info").appendChild(elem);
