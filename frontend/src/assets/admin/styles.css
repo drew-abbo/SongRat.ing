@@ -275,6 +275,22 @@ p {
   background-color: var(--accent-color-1);
 }
 
+.content .table-card .download-table-button {
+  margin: 10px;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+  text-align: center;
+  font-weight: bold;
+  text-decoration: none;
+  background-color: var(--accent-color-2);
+  cursor: pointer;
+}
+.content .table-card .download-table-button:hover {
+  background-color: var(--accent-color-1);
+}
+
 .content #need-more-data-msg {
   margin-top: 40px;
   margin-bottom: 50vh;

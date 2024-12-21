@@ -649,6 +649,34 @@ function roundTo2(num) {
   return numArr.join("");
 }
 
+function sanitizeStrForCSV(str) {
+  return /[",\r\n]/.test(str) ? `"${str.replaceAll('"', '""')}"` : str;
+}
+
+function downloadTableAsCSVFile(table) {
+  const resultRows = [];
+  for (const section of table.children) {
+    for (const tableRow of section.children) {
+      resultRows.push(
+        Array.from(tableRow.children).map((tableCell) =>
+          sanitizeStrForCSV(tableCell.innerText)
+        )
+      );
+    }
+  }
+
+  const fileAsCSVStr = resultRows.map((row) => row.join(",")).join("\r\n");
+
+  const downloadLink = newElement("a", [], {
+    href: URL.createObjectURL(new Blob([fileAsCSVStr], { type: "text/plain" })),
+    download: "songrat_table.csv",
+  });
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+  URL.revokeObjectURL(downloadLink.href);
+}
+
 function initializeSongTable(gameData) {
   const [columnInfo, columnData] = getSongsTableColumns(gameData);
 
@@ -880,11 +908,20 @@ function initializeSongTable(gameData) {
       (filterForPlayer ? ", filtered for " + filterForPlayer + "'s songs" : "");
   };
 
+  const downloadTableButton = newElement("button", ["download-table-button"], {
+    innerText: "Download Table (CSV)",
+  });
+  downloadTableButton.addEventListener("click", () => {
+    downloadTableAsCSVFile(songsTable);
+  });
+
   [
     newElement("div", ["table-scroll-container"], {}, [songsTable]),
     songsTableOrderInfo,
     newElement("hr"),
     columnCheckboxItems,
+    newElement("hr"),
+    downloadTableButton,
   ].forEach((element) => songsTableCard.appendChild(element));
 
   renderSongsTable();
@@ -1050,11 +1087,20 @@ function initializePlayerTable(gameData) {
       (orderByReversed ? " (high to low)" : " (low to high)");
   };
 
+  const downloadTableButton = newElement("button", ["download-table-button"], {
+    innerText: "Download Table (CSV)",
+  });
+  downloadTableButton.addEventListener("click", () => {
+    downloadTableAsCSVFile(playersTable);
+  });
+
   [
     newElement("div", ["table-scroll-container"], {}, [playersTable]),
     playersTableOrderInfo,
     newElement("hr"),
     columnCheckboxItems,
+    newElement("hr"),
+    downloadTableButton
   ].forEach((element) => playersTableCard.appendChild(element));
 
   renderPlayersTable();
