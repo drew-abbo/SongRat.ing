@@ -357,6 +357,42 @@ function getSongsTableColumns(gameData) {
   return [columnInfo, columnData];
 }
 
+function averagesGivenPerPlaylistMatrix(rowMatrix, playerNames) {
+  const ret = [];
+  let lastPlayer = null;
+  let counts;
+  for (let i = 0; i < rowMatrix.length; i++) {
+    if (playerNames[i] !== lastPlayer) {
+      if (lastPlayer !== null) {
+        for (let j = 0; j < ret.at(-1).length; j++) {
+          if (counts[j] !== 0) {
+            ret.at(-1)[j] /= counts[j];
+          } else {
+            ret.at(-1)[j] = null;
+          }
+        }
+      }
+      lastPlayer = playerNames[i];
+      ret.push(rowMatrix[i].map(() => 0));
+      counts = rowMatrix[i].map(() => 0);
+    }
+    for (let j = 0; j < rowMatrix[i].length; j++) {
+      if (rowMatrix[i][j] !== null) {
+        ret.at(-1)[j] += rowMatrix[i][j];
+        counts[j]++;
+      }
+    }
+  }
+  for (let j = 0; j < ret.at(-1).length; j++) {
+    if (counts[j] !== 0) {
+      ret.at(-1)[j] /= counts[j];
+    } else {
+      ret.at(-1)[j] = null;
+    }
+  }
+  return ret;
+}
+
 function getPlayersTableColumns(gameData) {
   const songs = gameData.songs;
   const playerNames = gameData.players.map((player) => player.player_name);
@@ -515,12 +551,23 @@ function getPlayersTableColumns(gameData) {
     songs
   );
 
+  // array of rows where each row is the average rating recieved by each player
+  const avgMatrix = averagesGivenPerPlaylistMatrix(
+    ratingMatrixT,
+    songs.map((song) => song.player_name)
+  );
+
+  // array of rows where each row is the average rating given by each player
+  const avgMatrixT = matrixTranspose(avgMatrix);
+
   // collect all column data
   const columnData = [
     // index, player, songCount
     Array.from({ length: playerNames.length }, (_, i) => i + 1),
     [...playerNames],
-    Array.from(songsByPlayer(songs).values()).map((playerSongs) => playerSongs.length),
+    Array.from(songsByPlayer(songs).values()).map(
+      (playerSongs) => playerSongs.length
+    ),
 
     // averageReceived, medianReceived, stdevReceived, modeReceived,
     // minRatingReceived, maxRatingReceived, minRatingReceivedFrom,
@@ -531,8 +578,8 @@ function getPlayersTableColumns(gameData) {
     ratingMatrixTByPlayer.map((row) => rowMode(row)),
     ratingMatrixTByPlayer.map((row) => rowMin(row)),
     ratingMatrixTByPlayer.map((row) => rowMax(row)),
-    playerNames.map(() => "TODO"), // TODO: likedMostBy
-    playerNames.map(() => "TODO"), // TODO: likedLeastBy
+    avgMatrix.map((row) => rowMaxFrom(row, playerNames)),
+    avgMatrix.map((row) => rowMinFrom(row, playerNames)),
 
     // averageGiven, medianGiven, stdevGiven, modeGiven, minRatingGiven,
     // maxRatingGiven, minRatingGivenTo, maxRatingGivenTo, favorite,
@@ -543,11 +590,10 @@ function getPlayersTableColumns(gameData) {
     ratingMatrix.map((column) => rowMode(column)),
     ratingMatrix.map((column) => rowMin(column)),
     ratingMatrix.map((column) => rowMax(column)),
-    playerNames.map(() => "TODO"), // TODO: favorite
-    playerNames.map(() => "TODO"), // TODO: leastFavorite
+    avgMatrixT.map((column) => rowMaxFrom(column, playerNames)),
+    avgMatrixT.map((column) => rowMinFrom(column, playerNames)),
   ];
 
-  console.log(columnData);
   return [columnInfo, columnData];
 }
 
