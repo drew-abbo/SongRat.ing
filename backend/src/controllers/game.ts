@@ -114,6 +114,8 @@ export async function peekGameInfo(req: Request, res: Response) {
   return res.status(404).json({ message: "Unknown or expired invite code" });
 }
 
+const GAME_PLAYER_LIMIT = 50;
+
 export async function joinGame(req: Request, res: Response) {
   const body: {
     player_name: string;
@@ -129,6 +131,7 @@ export async function joinGame(req: Request, res: Response) {
     require_playlist_link: boolean;
   };
   let nameIsTaken: boolean;
+  let gamePlayerLimitReached: boolean;
 
   // get a client for a transaction
   const client = await db.connect();
@@ -136,7 +139,7 @@ export async function joinGame(req: Request, res: Response) {
   try {
     await client.query("BEGIN");
 
-    const [gameInfoQueryResult, nameIsTakenQueryResult] = await Promise.all([
+    const [gameInfoQueryResult, takenNamesQueryResult] = await Promise.all([
       // get info about the game via the invite code
       client.query(
         `SELECT
@@ -150,19 +153,19 @@ export async function joinGame(req: Request, res: Response) {
         [req.params.invite_code]
       ),
 
-      // check if the provided name already exists for the game
+      // collect the names of all players already in the game
       client.query(
-        `SELECT EXISTS (
-          SELECT p.player_name
-          FROM players AS p
-          JOIN games AS g ON p.game_id = g.game_id
-          WHERE g.invite_code = $1 AND p.player_name = $2
-        ) AS name_is_taken`,
-        [req.params.invite_code, body.player_name]
+        `SELECT p.player_name
+        FROM players AS p
+        JOIN games AS g on p.game_id = g.game_id
+        WHERE g.invite_code = $1`,
+        [req.params.invite_code]
       ),
     ]);
     gameInfo = gameInfoQueryResult.rows[0];
-    nameIsTaken = nameIsTakenQueryResult.rows[0]?.name_is_taken;
+    nameIsTaken = takenNamesQueryResult.rows.includes(body.player_name);
+    gamePlayerLimitReached =
+      takenNamesQueryResult.rows.length >= GAME_PLAYER_LIMIT;
 
     if (!gameInfo || gameInfo.game_status !== "waiting_for_players") {
       return res
@@ -174,6 +177,12 @@ export async function joinGame(req: Request, res: Response) {
       return res
         .status(409)
         .json({ message: "Provided name is already in use for this game" });
+    }
+
+    if (gamePlayerLimitReached) {
+      return res.status(409).json({
+        message: `Games can't have over ${GAME_PLAYER_LIMIT} players`,
+      });
     }
 
     // ensure a playlist link was provided (if required)
