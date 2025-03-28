@@ -68,16 +68,18 @@ echo "0 0,12 * * * $(pwd)/scripts/renew_ssl.sh 2>> $(pwd)/cron.log" | sudo tee -
 echo "* * * * * $(pwd)/scripts/patch.sh 2>> $(pwd)/cron.log" | sudo tee -a /var/spool/cron/crontabs/root > /dev/null
 ```
 
-9. Set up database backups every 30 minutes (replace `dest` with something like
-   `other_server_user@other_server_ip:/path/to/backup/location/`). Note that you
-   need to have a working ssh connection already set up between the server and
-   the backup server for this to work.
+9. Set up database backups every 30 minutes. Replace `dest` with the SCP
+   destination (like
+   `other_server_user@other_server_ip:/path/to/backup/location/`) and
+   `ssh_key_file` with the path to the ssh private key file to use. Note that
+   you need to have a working ssh connection already set up between the server
+   and the backup server for this to work.
 
 ```bash
-echo "*/30 * * * * $(pwd)/scripts/backup_db.sh dest 2>> $(pwd)/cron.log" | sudo tee -a /var/spool/cron/crontabs/root > /dev/null
+echo "*/30 * * * * $(pwd)/scripts/backup_db.sh dest ssh_key_file 2>> $(pwd)/cron.log" | sudo tee -a /var/spool/cron/crontabs/root > /dev/null
 ```
 
-10.  Look at [.env.example](./.env.example) and create a `.env` file that matches
+1.   Look at [.env.example](./.env.example) and create a `.env` file that matches
      the template.
 
 ## Managing the Server
@@ -126,9 +128,10 @@ To manually renew SSL certificate:
 sudo ./scripts/renew_ssl.sh
 ```
 
-To backup the database to another server (replace `dest` with something like
-`other_server_user@other_server_ip:/path/to/backup/location/`):
+To backup the database to another server (replace `dest` with the SCP
+destination (like `other_server_user@other_server_ip:/path/to/backup/location/`)
+and `ssh_key_file` with the path to the ssh private key file to use).
 
 ```bash
-sudo ./scripts/backup_db.sh dest
+sudo ./scripts/backup_db.sh dest ssh_key_file
 ```
