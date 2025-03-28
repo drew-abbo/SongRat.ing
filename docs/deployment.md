@@ -68,7 +68,7 @@ echo "0 0,12 * * * $(pwd)/scripts/renew_ssl.sh 2>> $(pwd)/cron.log" | sudo tee -
 echo "* * * * * $(pwd)/scripts/patch.sh 2>> $(pwd)/cron.log" | sudo tee -a /var/spool/cron/crontabs/root > /dev/null
 ```
 
-9. Set up database backups every 15 minutes (replace `dest` with something like
+9. Set up database backups every 30 minutes (replace `dest` with something like
    `other_server_user@other_server_ip:/path/to/backup/location/`). Note that you
    need to have a working ssh connection already set up between the server and
    the backup server for this to work.
