@@ -17,7 +17,7 @@ signed SSL certificates (this script does all of that):
 ./scripts/dev_setup.sh
 ```
 
-The backend API spec can be found [here](./backend/openapi.yml).
+The backend API spec can be found [here](./docs/openapi.yml).
 
 ## Deployment
 
