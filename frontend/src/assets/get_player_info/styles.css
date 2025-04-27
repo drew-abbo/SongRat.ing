@@ -111,7 +111,7 @@ p {
   min-height: 40px;
 }
 
-#join-button {
+#submit-button {
   border-radius: 8px;
   margin-bottom: 75px;
   padding: 15px;
@@ -124,6 +124,6 @@ p {
   color: var(--color-black);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
-#join-button:hover {
+#submit-button:hover {
   background-color: var(--accent-color-1);
 }

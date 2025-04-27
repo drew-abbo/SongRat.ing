@@ -165,10 +165,11 @@ p {
   margin: 0 25px;
 }
 
-.playlist-link-container {
+.playlist-top-buttons-container {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 15px;
 }
 .playlist-link {
   background-color: var(--accent-color-2);

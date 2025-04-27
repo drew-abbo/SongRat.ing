@@ -26,45 +26,9 @@ function displayErrorScreen(msg) {
 const inviteCode = new URLSearchParams(window.location.search).get(
   "invite_code"
 );
-
-// generate the dynamic content from the invite_code parameter in the url
-let gameData;
-(() => {
-  // validate invite code
-  if (!inviteCode) {
-    displayErrorScreen("No invite code provided.");
-    return;
-  }
-  if (!/^I[a-zA-Z0-9]{15}$/.test(inviteCode)) {
-    displayErrorScreen("The invite code has an invalid format.");
-    return;
-  }
-
-  // request server data with validated invite code
-  sendRequest("GET", `/api/game/peek/${inviteCode}`, undefined, [404])
-    .then(([status, resJson]) => {
-      if (status === 404) {
-        displayErrorScreen("The invite code is invalid or expired.");
-        return;
-      }
-
-      components.game_info(document.getElementById("game-info"), resJson);
-
-      // display whether the playlist link field is required
-      if (resJson.require_playlist_link) {
-        document.getElementById("playlist-link").required = true;
-        document
-          .querySelector('label[for="playlist-link"]')
-          ?.classList.add("required-label");
-      }
-
-      gameData = resJson;
-      makeDynamicElementsVisible();
-    })
-    .catch((err) => {
-      displayErrorScreen(err.message);
-    });
-})();
+const playerCode = new URLSearchParams(window.location.search).get(
+  "player_code"
+);
 
 // class for modifying a list of songs
 class Songs {
@@ -86,7 +50,7 @@ class Songs {
   _ensureRowIndexValid(rowIndex) {
     if (rowIndex < 0 || rowIndex >= this._rows.length) {
       throw new Error(
-        `Can't remove row ${rowIndex} (${this._rows.length} rows)`
+        `Invalid row index ${rowIndex} (${this._rows.length} rows)`
       );
     }
   }
@@ -216,9 +180,19 @@ class Songs {
     return this._rows[rowIndex].songNameInput.value;
   }
 
+  setRowName(rowIndex, name) {
+    this._ensureRowIndexValid(rowIndex);
+    this._rows[rowIndex].songNameInput.value = name;
+  }
+
   rowArtist(rowIndex) {
     this._ensureRowIndexValid(rowIndex);
     return this._rows[rowIndex].artistInput.value;
+  }
+
+  setRowArtist(rowIndex, artist) {
+    this._ensureRowIndexValid(rowIndex);
+    this._rows[rowIndex].artistInput.value = artist;
   }
 
   rowIndexFromInputElement(rowInputElement) {
@@ -232,6 +206,21 @@ class Songs {
     }
     return -1;
   }
+}
+
+let gameData;
+
+function updateSongCounter(minSongs, maxSongs) {
+  const songCounterElement = document.getElementById("song-counter");
+  const numSongs = songs.rowCount() - 1;
+
+  if (numSongs === 0) {
+    songCounterElement.innerText = "";
+    return;
+  }
+
+  songCounterElement.innerText =
+    `${numSongs} / ${minSongs}` + (minSongs === maxSongs ? "" : `-${maxSongs}`);
 }
 
 const songs = new Songs(
@@ -257,32 +246,127 @@ const songs = new Songs(
       songs.removeRow(rowIndex);
     }
 
-    const songCounterElement = document.getElementById("song-counter");
-    const numSongs = songs.rowCount() - 1;
-
-    if (numSongs === 0) {
-      songCounterElement.innerText = "";
-      return;
-    }
-
-    const minSongs = gameData.min_songs_per_playlist;
-    const maxSongs = gameData.max_songs_per_playlist;
-
-    songCounterElement.innerText =
-      `${numSongs} / ${minSongs}` +
-      (minSongs === maxSongs ? "" : `-${maxSongs}`);
+    updateSongCounter(
+      gameData.min_songs_per_playlist,
+      gameData.max_songs_per_playlist
+    );
   }
 );
 
-// start with 1 empty row
-songs.addRow();
+async function fillExistingPlayerData() {
+  const [, playerData] = await sendRequest(
+    "GET",
+    `/api/player/review/${playerCode}`,
+    undefined,
+    []
+  );
 
-function disableJoinButton() {
-  document.getElementById("join-button").disabled = true;
+  const playerName = playerData.player_name;
+
+  const playerPlaylistLink = playerData.players.find(
+    (p) => p.player_name === playerName
+  ).playlist_link;
+
+  const playerSongs = playerData.songs.filter(
+    (s) => s.player_name === playerName
+  );
+
+  // fill in player name
+  document.getElementById("player-name").value = playerName;
+
+  // fill in playlist link
+  document.getElementById("playlist-link").value = playerPlaylistLink || "";
+
+  playerSongs.forEach((song, i) => {
+    songs.addRow();
+    songs.setRowName(i, song.title);
+    songs.setRowArtist(i, song.artist);
+  });
 }
-function enableJoinButton(cooldownMs = 500) {
+
+// generate the dynamic content from the invite_code parameter in the url
+(async () => {
+  // ensure we have either an invite or player code
+  if (!inviteCode && !playerCode) {
+    displayErrorScreen("No invite or player code provided.");
+    return;
+  }
+  if (inviteCode && playerCode) {
+    displayErrorScreen("An invite and player code were both provided.");
+    return;
+  }
+
+  // update page title, header, & submit button text based on the kind of code
+  if (inviteCode) {
+    document.title = "Join Game";
+    document.getElementById("submit-button").innerText = "Join";
+  } else {
+    document.title = "Update Player Info";
+    document.getElementById("submit-button").innerText = "Update";
+  }
+  document.getElementById("header").innerText = document.title;
+
+  // validate invite or player code
+  if (inviteCode && !/^I[a-zA-Z0-9]{15}$/.test(inviteCode)) {
+    displayErrorScreen("The invite code has an invalid format.");
+    return;
+  }
+  if (playerCode && !/^P[a-zA-Z0-9]{15}$/.test(playerCode)) {
+    displayErrorScreen("The player code has an invalid format.");
+    return;
+  }
+
+  try {
+    // request server data with validated invite code
+    const [status, resJson] = await sendRequest(
+      "GET",
+      `/api/game/peek/${inviteCode || playerCode}`,
+      undefined,
+      [404]
+    );
+    if (status === 404) {
+      if (inviteCode) {
+        displayErrorScreen("The invite code is invalid or expired.");
+      } else {
+        displayErrorScreen("The player code is invalid.");
+      }
+      return;
+    }
+
+    components.game_info(document.getElementById("game-info"), resJson);
+
+    // display whether the playlist link field is required
+    if (resJson.require_playlist_link) {
+      document.getElementById("playlist-link").required = true;
+      document
+        .querySelector('label[for="playlist-link"]')
+        ?.classList.add("required-label");
+    }
+
+    if (playerCode) {
+      await fillExistingPlayerData();
+    }
+
+    // add 1 empty row to the songs list so the user can add songs
+    songs.addRow();
+    updateSongCounter(
+      resJson.min_songs_per_playlist,
+      resJson.max_songs_per_playlist
+    );
+
+    gameData = resJson;
+    makeDynamicElementsVisible();
+  } catch (err) {
+    displayErrorScreen(err.message);
+  }
+})();
+
+function disableSubmitButton() {
+  document.getElementById("submit-button").disabled = true;
+}
+function enableSubmitButton(cooldownMs = 500) {
   setTimeout(() => {
-    document.getElementById("join-button").disabled = false;
+    document.getElementById("submit-button").disabled = false;
   }, cooldownMs);
 }
 
@@ -290,7 +374,7 @@ function setErrorMessage(reason) {
   document.getElementById("error-message").innerText = reason;
 }
 
-document.getElementById("join-button").addEventListener("click", () => {
+document.getElementById("submit-button").addEventListener("click", () => {
   const playerName = document.getElementById("player-name").value.trim();
   if (!playerName) {
     setErrorMessage("Please set a player name.");
@@ -331,7 +415,7 @@ document.getElementById("join-button").addEventListener("click", () => {
   }
 
   setErrorMessage("");
-  disableJoinButton();
+  disableSubmitButton();
 
   const requestJson = {
     player_name: playerName,
@@ -339,7 +423,14 @@ document.getElementById("join-button").addEventListener("click", () => {
     songs: songList,
   };
 
-  sendRequest("POST", `/api/game/join/${inviteCode}`, requestJson, [409])
+  sendRequest(
+    "POST",
+    inviteCode
+      ? `/api/game/join/${inviteCode}`
+      : `/api/player/update_info/${playerCode}`,
+    requestJson,
+    [409]
+  )
     .then(([status, resJson]) => {
       // if we get a 409 it almost definitely means the player name is
       // already taken (since we already validated everything else)
@@ -347,17 +438,22 @@ document.getElementById("join-button").addEventListener("click", () => {
         setErrorMessage(
           "The provided player name is already taken for this game."
         );
-        enableJoinButton();
+        enableSubmitButton();
         return;
       }
 
       // save last used player code so it autofills on the home page next time
-      localStorage.setItem("lastUsedCode", resJson.player_code);
-
-      window.location.href = `/player?player_code=${resJson.player_code}`;
+      // and redirect to the player's page
+      if (inviteCode) {
+        localStorage.setItem("lastUsedCode", resJson.player_code);
+        window.location.href = `/player?player_code=${resJson.player_code}`;
+      } else {
+        localStorage.setItem("lastUsedCode", playerCode);
+        window.location.href = `/player?player_code=${playerCode}`;
+      }
     })
     .catch((err) => {
       setErrorMessage(err.message);
-      enableJoinButton();
+      enableSubmitButton();
     });
 });
