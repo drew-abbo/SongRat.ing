@@ -133,29 +133,49 @@ function createPlaylistElements(gameData) {
       currPlaylist = newElement("div", ["playlist"], {}, [playlistName]);
       currPlaylistContent = newElement("div", ["playlist-content"]);
 
-      // optional playlist link div in playlist content div
-      let playlistLink;
-      for (let i = 0; i < gameData.players.length; i++) {
-        if (gameData.players[i].player_name === currPlayerName) {
-          playlistLink = gameData.players[i].playlist_link;
-          break;
+      // find this playlist's link
+      let playlistLink = gameData.players.find(
+        (p) => p.player_name === currPlayerName
+      ).playlist_link;
+
+      // whether or not we should add an edit button
+      const editButtonRequired =
+        currPlaylistIsOwnPlaylist &&
+        gameData.game_status === "waiting_for_players";
+
+      // playlist's link and edit button (both optional)
+      if (editButtonRequired || playlistLink) {
+        const playlistLinkContainerChildren = [];
+
+        if (editButtonRequired) {
+          playlistLinkContainerChildren.push(
+            newElement("a", ["playlist-link"], {
+              href: `/get_player_info?player_code=${playerCode}`,
+              rel: "noopener noreferrer",
+              innerText: "Edit Playlist",
+            })
+          );
         }
-      }
-      if (playlistLink) {
-        const playlistLinkContainer = newElement(
-          "div",
-          ["playlist-link-container"],
-          {},
-          [
+
+        if (playlistLink) {
+          playlistLinkContainerChildren.push(
             newElement("a", ["playlist-link"], {
               href: playlistLink,
               target: "_blank",
               rel: "noopener noreferrer",
               innerText: "Link",
-            }),
-          ]
+            })
+          );
+        }
+
+        currPlaylistContent.appendChild(
+          newElement(
+            "div",
+            ["playlist-top-buttons-container"],
+            {},
+            playlistLinkContainerChildren
+          )
         );
-        currPlaylistContent.appendChild(playlistLinkContainer);
       }
 
       // add callback so clicking the playlist name opens/closes the content
