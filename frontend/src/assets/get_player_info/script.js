@@ -26,45 +26,9 @@ function displayErrorScreen(msg) {
 const inviteCode = new URLSearchParams(window.location.search).get(
   "invite_code"
 );
-
-// generate the dynamic content from the invite_code parameter in the url
-let gameData;
-(() => {
-  // validate invite code
-  if (!inviteCode) {
-    displayErrorScreen("No invite code provided.");
-    return;
-  }
-  if (!/^I[a-zA-Z0-9]{15}$/.test(inviteCode)) {
-    displayErrorScreen("The invite code has an invalid format.");
-    return;
-  }
-
-  // request server data with validated invite code
-  sendRequest("GET", `/api/game/peek/${inviteCode}`, undefined, [404])
-    .then(([status, resJson]) => {
-      if (status === 404) {
-        displayErrorScreen("The invite code is invalid or expired.");
-        return;
-      }
-
-      components.game_info(document.getElementById("game-info"), resJson);
-
-      // display whether the playlist link field is required
-      if (resJson.require_playlist_link) {
-        document.getElementById("playlist-link").required = true;
-        document
-          .querySelector('label[for="playlist-link"]')
-          ?.classList.add("required-label");
-      }
-
-      gameData = resJson;
-      makeDynamicElementsVisible();
-    })
-    .catch((err) => {
-      displayErrorScreen(err.message);
-    });
-})();
+const playerCode = new URLSearchParams(window.location.search).get(
+  "player_code"
+);
 
 // class for modifying a list of songs
 class Songs {
@@ -234,6 +198,8 @@ class Songs {
   }
 }
 
+let gameData;
+
 const songs = new Songs(
   // if we're typing in the last row, add a new row, unless we clear out
   // the 2nd to last row, then we should be the last row
@@ -277,12 +243,98 @@ const songs = new Songs(
 // start with 1 empty row
 songs.addRow();
 
-function disableJoinButton() {
-  document.getElementById("join-button").disabled = true;
+function fillExistingPlayerData(gameData) {
+  // Given as `gameData`:
+  // {
+  //   game_name: string
+  //   game_description: string
+  //   min_songs_per_playlist: numuber
+  //   max_songs_per_playlist: number
+  //   require_playlist_link: boolean
+  // }
+  //
+  // TODO:
+  // - Get player data from server.
+  // - Fill in player name.
+  // - Fill in player playlist link (possibly returned from server as `null`).
+  // - Fill in songs (using `songs` API).
+  // - Throw an error if something goes wrong.
 }
-function enableJoinButton(cooldownMs = 500) {
+
+// generate the dynamic content from the invite_code parameter in the url
+(() => {
+  // ensure we have either an invite or player code
+  if (!inviteCode && !playerCode) {
+    displayErrorScreen("No invite or player code provided.");
+    return;
+  }
+  if (inviteCode && playerCode) {
+    displayErrorScreen("An invite and player code were both provided.");
+    return;
+  }
+
+  // update page title, header, & submit button text based on the kind of code
+  if (inviteCode) {
+    document.title = "Join Game";
+    document.getElementById("submit-button").innerText = "Join";
+  } else {
+    document.title = "Update Player Info";
+    document.getElementById("submit-button").innerText = "Update";
+  }
+  document.getElementById("header").innerText = document.title;
+
+  // validate invite or player code
+  if (inviteCode && !/^I[a-zA-Z0-9]{15}$/.test(inviteCode)) {
+    displayErrorScreen("The invite code has an invalid format.");
+    return;
+  }
+  if (playerCode && !/^P[a-zA-Z0-9]{15}$/.test(playerCode)) {
+    displayErrorScreen("The player code has an invalid format.");
+    return;
+  }
+
+  // request server data with validated invite code
+  sendRequest("GET", `/api/game/peek/${inviteCode || playerCode}`, undefined, [
+    404,
+  ])
+    .then(([status, resJson]) => {
+      if (status === 404) {
+        if (inviteCode) {
+          displayErrorScreen("The invite code is invalid or expired.");
+        } else {
+          displayErrorScreen("The player code is invalid.");
+        }
+        return;
+      }
+
+      components.game_info(document.getElementById("game-info"), resJson);
+
+      // display whether the playlist link field is required
+      if (resJson.require_playlist_link) {
+        document.getElementById("playlist-link").required = true;
+        document
+          .querySelector('label[for="playlist-link"]')
+          ?.classList.add("required-label");
+      }
+
+      if (playerCode) {
+        fillExistingPlayerData(gameData);
+      }
+
+      gameData = resJson;
+      makeDynamicElementsVisible();
+    })
+    .catch((err) => {
+      displayErrorScreen(err.message);
+    });
+})();
+
+function disableSubmitButton() {
+  document.getElementById("submit-button").disabled = true;
+}
+function enableSubmitButton(cooldownMs = 500) {
   setTimeout(() => {
-    document.getElementById("join-button").disabled = false;
+    document.getElementById("submit-button").disabled = false;
   }, cooldownMs);
 }
 
@@ -290,7 +342,7 @@ function setErrorMessage(reason) {
   document.getElementById("error-message").innerText = reason;
 }
 
-document.getElementById("join-button").addEventListener("click", () => {
+document.getElementById("submit-button").addEventListener("click", () => {
   const playerName = document.getElementById("player-name").value.trim();
   if (!playerName) {
     setErrorMessage("Please set a player name.");
@@ -331,7 +383,7 @@ document.getElementById("join-button").addEventListener("click", () => {
   }
 
   setErrorMessage("");
-  disableJoinButton();
+  disableSubmitButton();
 
   const requestJson = {
     player_name: playerName,
@@ -339,7 +391,14 @@ document.getElementById("join-button").addEventListener("click", () => {
     songs: songList,
   };
 
-  sendRequest("POST", `/api/game/join/${inviteCode}`, requestJson, [409])
+  sendRequest(
+    "POST",
+    inviteCode
+      ? `/api/game/join/${inviteCode}`
+      : `/api/player/update_info/${playerCode}`,
+    requestJson,
+    [409]
+  )
     .then(([status, resJson]) => {
       // if we get a 409 it almost definitely means the player name is
       // already taken (since we already validated everything else)
@@ -347,7 +406,7 @@ document.getElementById("join-button").addEventListener("click", () => {
         setErrorMessage(
           "The provided player name is already taken for this game."
         );
-        enableJoinButton();
+        enableSubmitButton();
         return;
       }
 
@@ -358,6 +417,6 @@ document.getElementById("join-button").addEventListener("click", () => {
     })
     .catch((err) => {
       setErrorMessage(err.message);
-      enableJoinButton();
+      enableSubmitButton();
     });
 });

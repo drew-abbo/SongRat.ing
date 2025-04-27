@@ -60,7 +60,7 @@ async function enterCodeSubmit() {
   }
 
   if (code[0] === "I") {
-    window.location.href = `/join_game?invite_code=${code}`;
+    window.location.href = `/get_player_info?invite_code=${code}`;
   } else if (code[0] === "P") {
     window.location.href = `/player?player_code=${code}`;
   } else {
