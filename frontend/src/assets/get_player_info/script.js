@@ -50,7 +50,7 @@ class Songs {
   _ensureRowIndexValid(rowIndex) {
     if (rowIndex < 0 || rowIndex >= this._rows.length) {
       throw new Error(
-        `Can't remove row ${rowIndex} (${this._rows.length} rows)`
+        `Invalid row index ${rowIndex} (${this._rows.length} rows)`
       );
     }
   }
@@ -180,9 +180,19 @@ class Songs {
     return this._rows[rowIndex].songNameInput.value;
   }
 
+  setRowName(rowIndex, name) {
+    this._ensureRowIndexValid(rowIndex);
+    this._rows[rowIndex].songNameInput.value = name;
+  }
+
   rowArtist(rowIndex) {
     this._ensureRowIndexValid(rowIndex);
     return this._rows[rowIndex].artistInput.value;
+  }
+
+  setRowArtist(rowIndex, artist) {
+    this._ensureRowIndexValid(rowIndex);
+    this._rows[rowIndex].artistInput.value = artist;
   }
 
   rowIndexFromInputElement(rowInputElement) {
@@ -199,6 +209,19 @@ class Songs {
 }
 
 let gameData;
+
+function updateSongCounter(minSongs, maxSongs) {
+  const songCounterElement = document.getElementById("song-counter");
+  const numSongs = songs.rowCount() - 1;
+
+  if (numSongs === 0) {
+    songCounterElement.innerText = "";
+    return;
+  }
+
+  songCounterElement.innerText =
+    `${numSongs} / ${minSongs}` + (minSongs === maxSongs ? "" : `-${maxSongs}`);
+}
 
 const songs = new Songs(
   // if we're typing in the last row, add a new row, unless we clear out
@@ -223,46 +246,46 @@ const songs = new Songs(
       songs.removeRow(rowIndex);
     }
 
-    const songCounterElement = document.getElementById("song-counter");
-    const numSongs = songs.rowCount() - 1;
-
-    if (numSongs === 0) {
-      songCounterElement.innerText = "";
-      return;
-    }
-
-    const minSongs = gameData.min_songs_per_playlist;
-    const maxSongs = gameData.max_songs_per_playlist;
-
-    songCounterElement.innerText =
-      `${numSongs} / ${minSongs}` +
-      (minSongs === maxSongs ? "" : `-${maxSongs}`);
+    updateSongCounter(
+      gameData.min_songs_per_playlist,
+      gameData.max_songs_per_playlist
+    );
   }
 );
 
-// start with 1 empty row
-songs.addRow();
+async function fillExistingPlayerData() {
+  const [, playerData] = await sendRequest(
+    "GET",
+    `/api/player/review/${playerCode}`,
+    undefined,
+    []
+  );
 
-function fillExistingPlayerData(gameData) {
-  // Given as `gameData`:
-  // {
-  //   game_name: string
-  //   game_description: string
-  //   min_songs_per_playlist: numuber
-  //   max_songs_per_playlist: number
-  //   require_playlist_link: boolean
-  // }
-  //
-  // TODO:
-  // - Get player data from server.
-  // - Fill in player name.
-  // - Fill in player playlist link (possibly returned from server as `null`).
-  // - Fill in songs (using `songs` API).
-  // - Throw an error if something goes wrong.
+  const playerName = playerData.player_name;
+
+  const playerPlaylistLink = playerData.players.find(
+    (p) => p.player_name === playerName
+  ).playlist_link;
+
+  const playerSongs = playerData.songs.filter(
+    (s) => s.player_name === playerName
+  );
+
+  // fill in player name
+  document.getElementById("player-name").value = playerName;
+
+  // fill in playlist link
+  document.getElementById("playlist-link").value = playerPlaylistLink || "";
+
+  playerSongs.forEach((song, i) => {
+    songs.addRow();
+    songs.setRowName(i, song.title);
+    songs.setRowArtist(i, song.artist);
+  });
 }
 
 // generate the dynamic content from the invite_code parameter in the url
-(() => {
+(async () => {
   // ensure we have either an invite or player code
   if (!inviteCode && !playerCode) {
     displayErrorScreen("No invite or player code provided.");
@@ -293,40 +316,49 @@ function fillExistingPlayerData(gameData) {
     return;
   }
 
-  // request server data with validated invite code
-  sendRequest("GET", `/api/game/peek/${inviteCode || playerCode}`, undefined, [
-    404,
-  ])
-    .then(([status, resJson]) => {
-      if (status === 404) {
-        if (inviteCode) {
-          displayErrorScreen("The invite code is invalid or expired.");
-        } else {
-          displayErrorScreen("The player code is invalid.");
-        }
-        return;
+  try {
+    // request server data with validated invite code
+    const [status, resJson] = await sendRequest(
+      "GET",
+      `/api/game/peek/${inviteCode || playerCode}`,
+      undefined,
+      [404]
+    );
+    if (status === 404) {
+      if (inviteCode) {
+        displayErrorScreen("The invite code is invalid or expired.");
+      } else {
+        displayErrorScreen("The player code is invalid.");
       }
+      return;
+    }
 
-      components.game_info(document.getElementById("game-info"), resJson);
+    components.game_info(document.getElementById("game-info"), resJson);
 
-      // display whether the playlist link field is required
-      if (resJson.require_playlist_link) {
-        document.getElementById("playlist-link").required = true;
-        document
-          .querySelector('label[for="playlist-link"]')
-          ?.classList.add("required-label");
-      }
+    // display whether the playlist link field is required
+    if (resJson.require_playlist_link) {
+      document.getElementById("playlist-link").required = true;
+      document
+        .querySelector('label[for="playlist-link"]')
+        ?.classList.add("required-label");
+    }
 
-      if (playerCode) {
-        fillExistingPlayerData(gameData);
-      }
+    if (playerCode) {
+      await fillExistingPlayerData();
+    }
 
-      gameData = resJson;
-      makeDynamicElementsVisible();
-    })
-    .catch((err) => {
-      displayErrorScreen(err.message);
-    });
+    // add 1 empty row to the songs list so the user can add songs
+    songs.addRow();
+    updateSongCounter(
+      resJson.min_songs_per_playlist,
+      resJson.max_songs_per_playlist
+    );
+
+    gameData = resJson;
+    makeDynamicElementsVisible();
+  } catch (err) {
+    displayErrorScreen(err.message);
+  }
 })();
 
 function disableSubmitButton() {
@@ -411,9 +443,14 @@ document.getElementById("submit-button").addEventListener("click", () => {
       }
 
       // save last used player code so it autofills on the home page next time
-      localStorage.setItem("lastUsedCode", resJson.player_code);
-
-      window.location.href = `/player?player_code=${resJson.player_code}`;
+      // and redirect to the player's page
+      if (inviteCode) {
+        localStorage.setItem("lastUsedCode", resJson.player_code);
+        window.location.href = `/player?player_code=${resJson.player_code}`;
+      } else {
+        localStorage.setItem("lastUsedCode", playerCode);
+        window.location.href = `/player?player_code=${playerCode}`;
+      }
     })
     .catch((err) => {
       setErrorMessage(err.message);
