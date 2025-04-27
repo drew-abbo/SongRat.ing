@@ -830,6 +830,81 @@ paths:
         "500":
           description: Internal server error.
 
+  /player/update_info/{player_code}:
+    post:
+      summary: Update a player's info.
+      description: Update a player's game info given the player's player code.
+      operationId: playerUpdateInfo
+      parameters:
+        - name: player_code
+          description: A player code for the player/game to change a playlist link for.
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^P[a-zA-Z0-9]{15}$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                player_name:
+                  description: The name for this player.
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                playlist_link:
+                  description: The link for this player's playlist.
+                  nullable: true
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                songs:
+                  description:
+                    A list of all songs in this player's playlist (must be within range of
+                    'min_songs_per_playlist' and 'max_songs_per_playlist').
+                  type: array
+                  items:
+                    description: A song.
+                    type: object
+                    properties:
+                      title:
+                        description: The name of this song.
+                        type: string
+                        minLength: 1
+                        maxLength: 255
+                      artist:
+                        description: The artist of this song.
+                        type: string
+                        minLength: 1
+                        maxLength: 255
+                    required:
+                      - title
+                      - artist
+                  minItems: 1
+                  maxItems: 100
+              required:
+                - player_name
+                - songs
+      responses:
+        "201":
+          description: Player info updated.
+        "400":
+          description: Invalid input.
+        "404":
+          description: Unknown 'player_code' supplied.
+        "409":
+          description:
+            Invalid number of songs supplied (must be within range of 'min_songs_per_playlist' and
+            'max_songs_per_playlist'), name is already taken, or playlist link required but not
+            provided.
+        "410":
+          description: The 'player_code' is for a game that has already begun.
+        "500":
+          description: Internal server error.
+
   /player/rate_song/{player_code}:
     post:
       summary: Rate a song for a player.

@@ -31,6 +31,21 @@ const schemas: SchemaMap = Object.freeze({
     playlist_link: Joi.string().min(1).max(255).allow(null).required(),
   }),
 
+  "POST/player/update_info/:player_code": Joi.object({
+    player_name: Joi.string().min(1).max(255).required(),
+    playlist_link: Joi.string().min(1).max(255).allow(null).default(null),
+    songs: Joi.array()
+      .items(
+        Joi.object({
+          title: Joi.string().min(1).max(255).required(),
+          artist: Joi.string().min(1).max(255).required(),
+        })
+      )
+      .min(1)
+      .max(100)
+      .required(),
+  }),
+
   "POST/player/rate_song/:player_code": Joi.object({
     song_id: Joi.number().integer().min(1).max(INT_MAX).required(),
     rating: Joi.number().min(0.0).max(10.0).required(),

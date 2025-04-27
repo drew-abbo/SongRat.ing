@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import * as code from "../middleware/code";
 import basic500 from "../middleware/basic500";
 import db from "../db";
+import insertSongsQuery from "./utils/insert_songs_query";
 
 export async function checkCode(req: Request, res: Response) {
   const code = req.params.code;
@@ -226,25 +227,8 @@ export async function joinGame(req: Request, res: Response) {
       )
     ).rows[0].player_id;
 
-    // For efficiency we're inserting all songs in one db call. This means we
-    // need to generate a string like "($1, $2, $3), ($4, $5, $6)" to inject
-    // into the query. We also need to generate an argument array like
-    // [playerId, "title1", "artist1", playerId, "title2", "artist2"].
-    let i = 0;
-    let sqlArgs: Array<number | string> = [];
-    let sqlArgPlaceholders: Array<string> = [];
-    body.songs.forEach((song) => {
-      sqlArgs.push(playerId, song.title, song.artist);
-      sqlArgPlaceholders.push(`($${++i}, $${++i}, $${++i})`);
-    });
-    const fullSqlArgPlaceholder = sqlArgPlaceholders.join(", ");
-
     // add songs
-    await client.query(
-      `INSERT INTO songs (player_id, title, artist)
-      VALUES ${fullSqlArgPlaceholder}`,
-      sqlArgs
-    );
+    await client.query(...insertSongsQuery(body.songs, playerId));
 
     await client.query("COMMIT");
     res.status(201).json({ player_code: newPlayerCode });

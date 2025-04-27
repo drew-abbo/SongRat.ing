@@ -43,6 +43,13 @@ routes.post(
 );
 
 routes.post(
+  "/update_info/:player_code",
+  code.createValidatorMiddleware(code.Kind.PLAYER),
+  jsonBody.createValidatorMiddleware(schemas),
+  controllers.playerUpdateInfo
+);
+
+routes.post(
   "/rate_song/:player_code",
   code.createValidatorMiddleware(code.Kind.PLAYER),
   jsonBody.createValidatorMiddleware(schemas),
