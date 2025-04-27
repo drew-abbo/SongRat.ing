@@ -163,7 +163,9 @@ export async function joinGame(req: Request, res: Response) {
       ),
     ]);
     gameInfo = gameInfoQueryResult.rows[0];
-    nameIsTaken = takenNamesQueryResult.rows.includes(body.player_name);
+    nameIsTaken = takenNamesQueryResult.rows.some(
+      (row) => row.player_name == body.player_name
+    );
     gamePlayerLimitReached =
       takenNamesQueryResult.rows.length >= GAME_PLAYER_LIMIT;
 
