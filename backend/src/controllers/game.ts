@@ -88,21 +88,43 @@ export async function peekGameInfo(req: Request, res: Response) {
     require_playlist_link: boolean;
   };
 
+  const code = req.params.code;
+
   try {
-    const gameInfo: GameInfo | undefined = (
-      await db.query(
-        `SELECT
-          game_name,
-          game_description,
-          game_status,
-          min_songs_per_playlist,
-          max_songs_per_playlist,
-          require_playlist_link
-        FROM games
-        WHERE invite_code = $1`,
-        [req.params.invite_code]
-      )
-    ).rows[0];
+    let gameInfo: GameInfo | undefined;
+
+    if (code[0] == "I" || code[0] == "A") {
+      gameInfo = (
+        await db.query(
+          `SELECT
+            game_name,
+            game_description,
+            game_status,
+            min_songs_per_playlist,
+            max_songs_per_playlist,
+            require_playlist_link
+          FROM games
+          WHERE ${code[0] == "I" ? "invite" : "admin"}_code = $1`,
+          [code]
+        )
+      ).rows[0];
+    } else if (code[0] == "P") {
+      gameInfo = (
+        await db.query(
+          `SELECT
+            g.game_name,
+            g.game_description,
+            g.game_status,
+            g.min_songs_per_playlist,
+            g.max_songs_per_playlist,
+            g.require_playlist_link
+          FROM players AS p
+          JOIN games AS g ON p.game_id = g.game_id
+          WHERE p.player_code = $1`,
+          [code]
+        )
+      ).rows[0];
+    }
 
     if (gameInfo && gameInfo.game_status === "waiting_for_players") {
       delete gameInfo.game_status; // remove extra property
@@ -112,7 +134,7 @@ export async function peekGameInfo(req: Request, res: Response) {
     return basic500(res, err);
   }
 
-  return res.status(404).json({ message: "Unknown or expired invite code" });
+  return res.status(404).json({ message: "Unknown or expired code" });
 }
 
 const GAME_PLAYER_LIMIT = 50;

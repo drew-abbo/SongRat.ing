@@ -21,8 +21,8 @@ routes.post(
 );
 
 routes.get(
-  "/peek/:invite_code",
-  code.createValidatorMiddleware(code.Kind.INVITE),
+  "/peek/:code",
+  code.createValidatorMiddleware(code.Kind.ANY),
   jsonBody.createValidatorMiddleware(schemas),
   controllers.peekGameInfo
 );

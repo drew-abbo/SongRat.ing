@@ -3,9 +3,9 @@ import Joi from "joi";
 import { SchemaMap } from "../middleware/body_validator";
 
 const schemas: SchemaMap = Object.freeze({
-  "GET/check_code/:code": null,
+  "GET/game/check_code/:code": null,
 
-  "POST/new": Joi.object({
+  "POST/game/new": Joi.object({
     game_name: Joi.string().min(1).max(255).required(),
     game_description: Joi.string().max(2500).allow("").default(""),
     min_songs_per_playlist: Joi.number().integer().min(1).max(100).default(1),
@@ -21,9 +21,9 @@ const schemas: SchemaMap = Object.freeze({
     return value;
   }),
 
-  "GET/peek/:invite_code": null,
+  "GET/game/peek/:code": null,
 
-  "POST/join/:invite_code": Joi.object({
+  "POST/game/join/:invite_code": Joi.object({
     player_name: Joi.string().min(1).max(255).required(),
     playlist_link: Joi.string().min(1).max(255).allow(null).default(null),
     songs: Joi.array()

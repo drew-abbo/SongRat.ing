@@ -112,19 +112,19 @@ paths:
         "500":
           description: Internal server error.
 
-  /game/peek/{invite_code}:
+  /game/peek/{code}:
     get:
-      summary: Get some information about a game.
-      description: Retrieve some information about a game with an invite code.
+      summary: Get limited information about a game.
+      description: Retrieve limited information about a game with an invite/player/admin code.
       operationId: peekGameInfo
       parameters:
-        - name: invite_code
-          description: An invite code for the game to get info about.
+        - name: code
+          description: An invite, player, or admin code for the game to get info about.
           in: path
           required: true
           schema:
             type: string
-            pattern: "^I[a-zA-Z0-9]{15}$"
+            pattern: "^[API][a-zA-Z0-9]{15}$"
       responses:
         "200":
           description: Successfully retrieved game information.
@@ -157,7 +157,7 @@ paths:
         "400":
           description: Invalid input.
         "404":
-          description: Unknown 'invite_code' supplied.
+          description: Unknown 'code' supplied.
         "500":
           description: Internal server error.
 
