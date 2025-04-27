@@ -57,7 +57,8 @@ export function createValidatorMiddleware(schemas: SchemaMap): RequestHandler {
   }
 
   const ret = (req: Request, res: Response, next: NextFunction) => {
-    const schema: Joi.Schema | null = schemas[req.method + req.route?.path];
+    const schema: Joi.Schema | null =
+      schemas[req.method + req.baseUrl + req.route?.path];
     if (!schema) {
       next();
       return;
