@@ -3,6 +3,7 @@ import { PoolClient, Pool } from "pg";
 
 import basic500 from "../middleware/basic500";
 import db from "../db";
+import insertSongsQuery from "./utils/insert_songs_query";
 
 /** Returns a 404 with the message "Unknown player code". */
 function unknownPlayerCode(res: Response) {
@@ -411,7 +412,125 @@ export async function playerChangePlaylistLink(req: Request, res: Response) {
 }
 
 export async function playerUpdateInfo(req: Request, res: Response) {
-  return basic500(res, "NOT IMPLEMENTED YET...");
+  const body: {
+    player_name: string;
+    playlist_link: string | null;
+    songs: Array<{ title: string; artist: string }>;
+  } = req.body;
+
+  let gameInfo: {
+    game_status: string;
+    min_songs_per_playlist: number;
+    max_songs_per_playlist: number;
+    require_playlist_link: boolean;
+    player_id: number;
+  };
+  let nameIsTaken: boolean;
+
+  // get a client for a transaction
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const [gameInfoQueryResult, nameIsTakenQueryResult] = await Promise.all([
+      // game info
+      client.query(
+        `SELECT
+          g.game_status,
+          g.min_songs_per_playlist,
+          g.max_songs_per_playlist,
+          g.require_playlist_link,
+          p.player_id
+        FROM players AS p
+        JOIN games AS g ON p.game_id = g.game_id
+        WHERE player_code = $1`,
+        [req.params.player_code]
+      ),
+
+      // make sure the player's new name doesn't conflict with any existing
+      // names or is the same as their original name
+      client.query(
+        `SELECT EXISTS (
+          SELECT 1
+          FROM players AS p1
+          JOIN players AS p2 ON p1.game_id = p2.game_id
+          WHERE
+            p1.player_code = $1 AND
+            p2.player_code <> p1.player_code AND
+            p2.player_name = $2
+        ) AS name_is_taken`,
+        [req.params.player_code, body.player_name]
+      ),
+    ]);
+    gameInfo = gameInfoQueryResult.rows[0];
+    nameIsTaken = nameIsTakenQueryResult.rows[0].name_is_taken;
+
+    if (!gameInfo) {
+      return unknownPlayerCode(res);
+    }
+
+    if (gameInfo.game_status !== "waiting_for_players") {
+      return res.status(410).json({ message: "The game has already started." });
+    }
+
+    if (nameIsTaken) {
+      return res
+        .status(409)
+        .json({ message: "Name changed to name already in use for this game" });
+    }
+
+    // ensure a playlist link was provided (if required)
+    if (gameInfo.require_playlist_link && !body.playlist_link) {
+      return res
+        .status(409)
+        .json({ message: "Playlist link required but not provided" });
+    }
+
+    // ensure a valid number of songs was provided
+    const songCount = body.songs.length;
+    const minSongCount = gameInfo.min_songs_per_playlist;
+    const maxSongCount = gameInfo.max_songs_per_playlist;
+    if (songCount < minSongCount || songCount > maxSongCount) {
+      return res.status(409).json({
+        message:
+          (songCount > maxSongCount ? "Too many" : "Not enough") +
+          " songs were provided, expected " +
+          (minSongCount === maxSongCount
+            ? maxSongCount
+            : "between " + minSongCount + " and " + maxSongCount) +
+          " songs",
+      });
+    }
+
+    // update player info
+    await client.query(
+      `UPDATE players
+      SET
+        player_name = $1,
+        playlist_link = $2
+      WHERE player_id = $3`,
+      [body.player_name, body.playlist_link, gameInfo.player_id]
+    );
+
+    // remove old songs
+    await client.query(
+      `DELETE FROM songs
+      WHERE player_id = $1`,
+      [gameInfo.player_id]
+    );
+
+    // add songs
+    await client.query(...insertSongsQuery(body.songs, gameInfo.player_id));
+
+    await client.query("COMMIT");
+    res.status(201).json({ message: "Player data updated successfully" });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    return basic500(res, err);
+  } finally {
+    client.release();
+  }
 }
 
 export async function playerRateSong(req: Request, res: Response) {
