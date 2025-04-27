@@ -410,6 +410,10 @@ export async function playerChangePlaylistLink(req: Request, res: Response) {
   }
 }
 
+export async function playerUpdateInfo(req: Request, res: Response) {
+  return basic500(res, "NOT IMPLEMENTED YET...");
+}
+
 export async function playerRateSong(req: Request, res: Response) {
   // get a client for a transaction
   const client = await db.connect();
