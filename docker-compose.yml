@@ -8,7 +8,7 @@ services:
     volumes:
       - ./frontend/src:/usr/share/nginx/html
       - ./frontend/nginx.conf:/etc/nginx/nginx.conf
-      - ./frontend/certificates:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       backend:
         condition: service_healthy
