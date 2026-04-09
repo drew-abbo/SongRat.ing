@@ -4,6 +4,9 @@
 [Nn][Oo][Tt][Ee][Ss].*
 [Nn][Oo][Tt][Ee][Ss]
 
+# Backups
+backups/
+
 # Data Files
 data.json
 
