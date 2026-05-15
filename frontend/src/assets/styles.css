@@ -80,6 +80,7 @@ select {
 }
 #game-info pre {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   text-align: left;
   font-family: var(--site-font);
 }
