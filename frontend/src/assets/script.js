@@ -115,6 +115,7 @@ const components = Object.freeze({
  * @param {number[]} [allowedBadCodes=[]] An array of codes that are acceptable
  *  beyond the ones that are generally "ok" (you'd want to set this if something
  *  like a 409 isn't an unexpected response).
+ * @param {number} [maxRetries=0] Number of retry attempts on a network failure.
  *
  * @returns {Promise<[number, any]>} A promise that resolves to the server's
  *  response status code and the parsed JSON response.
@@ -135,20 +136,36 @@ const components = Object.freeze({
  *     console.error("Request failed!");
  *   });
  */
-async function sendRequest(method, url, jsonBody, allowedBadCodes = []) {
+async function sendRequest(
+  method,
+  url,
+  jsonBody,
+  allowedBadCodes = [],
+  maxRetries = 0,
+) {
   let res;
-  try {
-    res = await fetch(url, {
-      method: method,
 
-      // conditionally attach a JSON body
-      ...(jsonBody !== undefined && {
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(jsonBody),
-      }),
-    });
-  } catch (err) {
-    throw new Error("Failed to reach the server.");
+  let attempt = 0;
+  while (true) {
+    try {
+      res = await fetch(url, {
+        method: method,
+
+        // conditionally attach a JSON body
+        ...(jsonBody !== undefined && {
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(jsonBody),
+        }),
+      });
+      break;
+    } catch (err) {
+      if (attempt >= maxRetries) {
+        throw new Error("Failed to reach the server.");
+      }
+
+      attempt++;
+      await new Promise((r) => setTimeout(r, 200 * Math.pow(2, attempt - 1)));
+    }
   }
 
   let resJson;

@@ -76,10 +76,16 @@ function updateRatingInput(
   ratingInput.style.backgroundColor = colorFromRatingStr(ratingInput.value);
 
   // submit new rating
-  sendRequest("POST", `/api/player/rate_song/${playerCode}`, {
-    song_id: songId,
-    rating: ratingVal,
-  })
+  sendRequest(
+    "POST",
+    `/api/player/rate_song/${playerCode}`,
+    {
+      song_id: songId,
+      rating: ratingVal,
+    },
+    [],
+    3 /* maxRetries */,
+  )
     .then(() => {
       ratingsBySongId.set(songId, ratingVal);
     })

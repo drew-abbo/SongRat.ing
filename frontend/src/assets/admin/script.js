@@ -653,7 +653,7 @@ function sanitizeStrForCSV(str) {
   return /[",\r\n]/.test(str) ? `"${str.replaceAll('"', '""')}"` : str;
 }
 
-function downloadTableAsCSVFile(table) {
+function downloadTableAsCSVFile(table, downloadName) {
   const resultRows = [];
   for (const section of table.children) {
     for (const tableRow of section.children) {
@@ -669,7 +669,7 @@ function downloadTableAsCSVFile(table) {
 
   const downloadLink = newElement("a", [], {
     href: URL.createObjectURL(new Blob([fileAsCSVStr], { type: "text/plain" })),
-    download: "songrat_table.csv",
+    download: downloadName,
   });
   document.body.appendChild(downloadLink);
   downloadLink.click();
@@ -912,7 +912,7 @@ function initializeSongTable(gameData) {
     innerText: "Download Table (CSV)",
   });
   downloadTableButton.addEventListener("click", () => {
-    downloadTableAsCSVFile(songsTable);
+    downloadTableAsCSVFile(songsTable, "songs_data.csv");
   });
 
   [
@@ -1091,7 +1091,7 @@ function initializePlayerTable(gameData) {
     innerText: "Download Table (CSV)",
   });
   downloadTableButton.addEventListener("click", () => {
-    downloadTableAsCSVFile(playersTable);
+    downloadTableAsCSVFile(playersTable, "players_data.csv");
   });
 
   [
