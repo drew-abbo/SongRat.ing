@@ -255,6 +255,7 @@ p {
 }
 .content .table-card .column-checkbox-item {
   flex: 1 1 25%;
+  max-width: calc((100% - 30px) * (1 / 3));
   margin: 5px;
   padding: 5px 5px 5px 0;
   border-radius: 5px;

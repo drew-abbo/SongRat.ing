@@ -207,7 +207,7 @@ function rowMaxFrom(row, playerNames) {
   return foundIndex === null ? null : playerNames[foundIndex];
 }
 
-function songsByPlayer(songs) {
+function getSongsByPlayer(songs) {
   const ret = new Map();
   let lastPlayer = null;
   let lastPlayerArr = null;
@@ -418,7 +418,15 @@ function getPlayersTableColumns(gameData) {
       name: "Songs",
       width: "thin",
       renderMode: "default",
-      render: true,
+      render:
+        gameData.min_songs_per_playlist != gameData.max_songs_per_playlist,
+    },
+    {
+      id: "percentDone",
+      name: "Completion",
+      width: "thin",
+      renderMode: "percent",
+      render: gameData.game_status === "active",
     },
 
     // columns related to ratings received
@@ -560,13 +568,22 @@ function getPlayersTableColumns(gameData) {
   // array of rows where each row is the average rating given by each player
   const avgMatrixT = matrixTranspose(avgMatrix);
 
+  const songsByPlayer = getSongsByPlayer(songs);
+  
   // collect all column data
   const columnData = [
-    // index, player, songCount
+    // index, player, songCount, percentDone
     Array.from({ length: playerNames.length }, (_, i) => i + 1),
     [...playerNames],
-    Array.from(songsByPlayer(songs).values()).map(
+    Array.from(songsByPlayer.values()).map(
       (playerSongs) => playerSongs.length
+    ),
+    Array.from(songsByPlayer.values()).map(
+      (playerSongs, i) => {
+        const totalSongsToRate = songs.length - playerSongs.length;
+        const songsRated = ratingMatrix[i].filter((r) => r !== null).length;
+        return (songsRated / totalSongsToRate) * 100;
+      }
     ),
 
     // averageReceived, medianReceived, stdevReceived, modeReceived,
@@ -627,7 +644,11 @@ function renderModeToColor(cellValue, renderMode) {
     return colorFromRatingStr(String(cellValue), defaultColor);
   }
 
-  if (renderMode !== "default") {
+  if (renderMode === "percent") {
+    return colorFromRatingStr(String(cellValue), defaultColor, { min: 0, max: 100, interval: null});
+  }
+
+  if (renderMode !== "default" && renderMode !== "percent") {
     console.error(`Unknown render mode ${renderMode}`);
   }
 
@@ -647,6 +668,27 @@ function roundTo2(num) {
     numArr.pop();
   }
   return numArr.join("");
+}
+
+function renderAsText(txt, renderMode) {
+  if (txt === null || txt === undefined) {
+    return "-";
+  }
+
+  if (typeof txt === "number") {
+    let ret = roundTo2(txt);
+     if (renderMode === "percent") {
+      ret += "%";
+    }
+    return ret;
+  }
+
+  if (typeof txt !== "string") {
+    console.error("Unexpected type for `txt`.");
+    return String(txt);
+  }
+
+  return txt;
 }
 
 function sanitizeStrForCSV(str) {
@@ -870,32 +912,33 @@ function initializeSongTable(gameData) {
                 (rowItemWithColumnInfo) => rowItemWithColumnInfo[1].render
               )
               .map((rowItemWithColumnInfo) => {
+                const rowItem = rowItemWithColumnInfo[0];
+                const thisColumnInfo = rowItemWithColumnInfo[1];
+
                 const ret = newElement(
                   "td",
-                  ["table-column-width-" + rowItemWithColumnInfo[1].width],
+                  ["table-column-width-" + thisColumnInfo.width],
                   {
-                    innerText: roundTo2(rowItemWithColumnInfo[0]) ?? "-",
+                    innerText: renderAsText(rowItem, thisColumnInfo.renderMode),
                     style: `background-color: ${renderModeToColor(
-                      rowItemWithColumnInfo[0],
-                      rowItemWithColumnInfo[1].renderMode
+                      rowItem,
+                      thisColumnInfo.renderMode,
                     )};`,
-                  }
+                  },
                 );
 
                 // add the ability to filter by players
-                if (rowItemWithColumnInfo[1].id === "owner") {
+                if (thisColumnInfo.id === "owner") {
                   ret.classList.add("generic-hover-glow");
                   ret.addEventListener("click", (event) => {
                     filterForPlayer =
-                      filterForPlayer === rowItemWithColumnInfo[0]
-                        ? null
-                        : rowItemWithColumnInfo[0];
+                      filterForPlayer === rowItem ? null : rowItem;
                     renderSongsTable();
                   });
                 }
 
                 return ret;
-              })
+              }),
           )
         )
       )
@@ -1063,19 +1106,22 @@ function initializePlayerTable(gameData) {
               .filter(
                 (rowItemWithColumnInfo) => rowItemWithColumnInfo[1].render
               )
-              .map((rowItemWithColumnInfo) =>
-                newElement(
+              .map((rowItemWithColumnInfo) => {
+                const rowItem = rowItemWithColumnInfo[0];
+                const thisColumnInfo = rowItemWithColumnInfo[1];
+
+                return newElement(
                   "td",
-                  ["table-column-width-" + rowItemWithColumnInfo[1].width],
+                  ["table-column-width-" + thisColumnInfo.width],
                   {
-                    innerText: roundTo2(rowItemWithColumnInfo[0]) ?? "-",
+                    innerText: renderAsText(rowItem, thisColumnInfo.renderMode),
                     style: `background-color: ${renderModeToColor(
-                      rowItemWithColumnInfo[0],
-                      rowItemWithColumnInfo[1].renderMode
+                      rowItem,
+                      thisColumnInfo.renderMode,
                     )};`,
-                  }
-                )
-              )
+                  },
+                );
+              }),
           )
         )
       )

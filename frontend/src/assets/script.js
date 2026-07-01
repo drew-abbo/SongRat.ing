@@ -194,23 +194,15 @@ function stringRepresentsFloat(s) {
 }
 
 /**
- * Get a background color based on an input string that represents a number.
- *
- * @param {string} valueStr A string that may or may not represent a float.
- * @param {string} badColor The color to return if the string is bad.
+ * Get a background color based on an input string and how close/far it is from
+ * a min and max value.
+ * 
+ * @param {number} val A number in the range.
+ * @param {number} min The low end of the range.
+ * @param {number} max The high end of the range.
  * @returns {string} The CSS color string to be applied based on the value.
  */
-function colorFromRatingStr(valueStr, badColor = "#d6d6d6") {
-  const red = { r: 255, g: 216, b: 214 };
-  const yellow = { r: 255, g: 241, b: 227 };
-  const green = { r: 227, g: 255, b: 227 };
-
-  if (!stringRepresentsFloat(valueStr)) {
-    return badColor;
-  }
-  const val =
-    Math.round(Math.max(0, Math.min(parseFloat(valueStr), 10)) * 4) / 4;
-
+function colorFromNumInRange(val, min, max) {
   // get color inbetween 2 colors given a ratio
   function lerpColor(colorA, colorB, ratio) {
     return {
@@ -220,10 +212,49 @@ function colorFromRatingStr(valueStr, badColor = "#d6d6d6") {
     };
   }
 
-  const ret = lerpColor(
-    lerpColor(red, yellow, val / 10),
-    lerpColor(yellow, green, val / 10),
-    val / 10
+  const valClamped = Math.min(Math.max(val, min), max);
+  const ratio = (valClamped - min) / (max - min);
+  
+  const red = { r: 255, g: 216, b: 214 };
+  const yellow = { r: 255, g: 241, b: 227 };
+  const green = { r: 227, g: 255, b: 227 };
+
+  const color = lerpColor(
+    lerpColor(red, yellow, ratio),
+    lerpColor(yellow, green, ratio),
+    ratio
   );
-  return `rgb(${ret.r}, ${ret.g}, ${ret.b})`;
+
+  return `rgb(${color.r}, ${color.g}, ${color.b})`;
+}
+
+/**
+ * Get a background color based on an input string that represents a number.
+ *
+ * @param {string} valueStr A string that may or may not represent a float.
+ * @param {string} badColor The color to return if the string is bad.
+ * @param {Object} [range={ min: 0, max: 10, interval: 0.25 }]
+ * @param {number} range.min The minimum value.
+ * @param {number} range.max The maximum value.
+ * @param {?number} range.interval The smallest interval between two numbers
+ *   with different colors.
+ * @returns {string} The CSS color string to be applied based on the value.
+ */
+function colorFromRatingStr(
+  valueStr,
+  badColor = "#d6d6d6",
+  range = { min: 0, max: 10, interval: 0.25 },
+) {
+  if (!stringRepresentsFloat(valueStr)) {
+    return badColor;
+  }
+
+  const parsedVal = parseFloat(valueStr);
+
+  const val =
+    range.interval != null
+      ? Math.round(parsedVal * (1 / range.interval)) / (1 / range.interval)
+      : parsedVal;
+
+  return colorFromNumInRange(val, range.min, range.max);
 }
