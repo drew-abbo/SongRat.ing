@@ -1,24 +1,25 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "$0")" && cd ..
+cd "$(dirname "$0")/.."
 
 if [[ "$#" -ne 0 && "$#" -gt 1 ]]; then
   echo "Too many arguments." >&2
   echo "Usage: $0 [--force]" >&2
   exit 1
 fi
-
 if [[ "$#" -eq 1 && "$1" != "--force" ]]; then
   echo "Invalid argument: $1" >&2
   echo "Usage: $0 [--force]" >&2
   exit 1
 fi
 
-num_services=$(docker-compose config --services | wc -l)
-num_running_services=$(docker-compose ps --status running --quiet | wc -l)
-if [[ $num_running_services -lt $num_services ]]; then
-    echo "Not all docker services running, starting services..."
-    docker-compose up -d
+# Start the app if it has yet to be started since the server's last reboot.
+STARTUP_FLAG="/run/songrat-startup-flag"
+if [[ ! -f "$STARTUP_FLAG" ]]; then
+  touch "$STARTUP_FLAG"
+  echo "$(date)" >&2
+  echo "Startup flag missing, starting services..." >&2
+  docker-compose up -d
 fi
 
 git fetch origin
